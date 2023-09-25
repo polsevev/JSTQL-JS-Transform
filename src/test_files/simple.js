@@ -1,1 +1,1 @@
-var a = 100 + 100;
+var oldVariableName = "Old_value";
