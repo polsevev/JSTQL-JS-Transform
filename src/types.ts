@@ -22,6 +22,7 @@ import {
     ThrowStatement,
     TryStatement,
     VariableDeclaration,
+    VariableDeclarationKind,
     WhileStatement,
     WithStatement,
 } from "@swc/core";
@@ -52,8 +53,8 @@ type MatchDeclaration =
     | MatchFunctionDeclaration
     | MatchVariableDeclaration;
 
-export enum Transformation {
-    ANYTHING,
+export enum WildCardType {
+  ANYTHING,
 }
 
 export interface MatchScript extends Script {}
@@ -95,11 +96,13 @@ export interface MatchExpressionStatement extends ExpressionStatement {}
 export interface matchIfStatement extends IfStatement {}
 
 export interface matchBinaryExpression extends BlockStatement {
-    __stmts: Transformation;
+    __stmts: WildCardType;
 }
 
 export interface MatchClassDeclaration extends ClassDeclaration {}
 
 export interface MatchFunctionDeclaration extends FunctionDeclaration {}
 
-export interface MatchVariableDeclaration extends VariableDeclaration {}
+export interface MatchVariableDeclaration extends Omit<VariableDeclaration, "kind"> {
+  kind : VariableDeclarationKind |  WildCardType
+}

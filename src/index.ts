@@ -1,81 +1,83 @@
-import swc from "@swc/core";
+import swc, { printSync } from "@swc/core";
 import { MatchScript } from "./types";
+import { from, to } from "./patterns/patterns";
 
 const PATTERN_PATH = "src/patterns/test.json";
 
 const main = async () => {
-    console.log(Bun.version);
+  console.log(Bun.version);
 
-    let inputFile = await Bun.file("src/test_files/simple.js").text();
+  let inputFile = await Bun.file("src/test_files/simple.js").text();
+  console.log("Hello!");
 
-    console.log(
-        "=====================\nCurrent file to be transformed : \n" +
-            inputFile +
-            "\n===================="
-    );
-    swc.parseFile("src/test_files/simple.js", {
-        syntax: "ecmascript",
-        jsx: false,
+  const hello = "lol";
 
-        target: "es2022",
+  console.log(
+    "=====================\nCurrent file to be transformed : \n" +
+      inputFile +
+      "\n====================",
+  );
+  swc.parseFile("src/test_files/simple.js", {
+    syntax: "ecmascript",
+    jsx: false,
 
-        isModule: false,
-    }).then((module) => {
-        //console.log(module);
-        //   swc.print(module).then((o: swc.Output) => {
-        //     console.log(o);
-        //   });
+    target: "es2022",
 
-        console.log(module.body);
+    isModule: false,
+  }).then((module) => {
+    //console.log(module);
+    //   swc.print(module).then((o: swc.Output) => {
+    //     console.log(o);
+    //   });
 
-        matchStatements(module).then((a) => {
-            console.log(
-                "================\nOutput code: \n" +
-                    a.code +
-                    "\n========================"
-            );
-        });
+//    console.log(module.body);
+
+    matchStatements(module).then((a) => {
+      console.log(
+        "================\nOutput code: \n" +
+          a +
+          "\n========================",
+      );
     });
+  });
 };
 
 const matchStatements = async (module: swc.Script) => {
-    const patternFile = Bun.file(PATTERN_PATH);
-    const [from, to]: [MatchScript, MatchScript] = JSON.parse(
-        await patternFile.text()
-    );
-    return await swc.printSync(match(from, to, module));
+  let fromLocal = from;
+  let toLocal = to;
+
+  return match(fromLocal, toLocal, module.body);
 };
 
-const match = (from: any, to: any, module: swc.Script): swc.Script => {
-    console.log(to);
-    console.log(module);
-    console.log(from);
+enum MatchingResults{
+  FULL,
+  PARTIAL,
+  SINGLE,
+  NONE
+}
 
-    for (const obj of module.body) {
-        let allPresent = true;
-        for (const key in obj) {
-            if (!(key in from)) {
-                allPresent = false;
-            }
-        }
-        if (allPresent) {
-            console.log("Found first match!");
-            for (const [key, val] of Object.entries(obj)) {
-                match(from["key"], to, val);
-            }
-        }
-    }
+const match = (from: any, to: any, module: swc.Statement[]): any => {
+  
+  let curMatchType = MatchingResults.NONE;
 
-    return module;
+  for (const [key, value] of Object.entries(module)){
+    if (from[key] && key != "span"){
+      console.log(from[key] + " == " + value);
+      if (from[key] == value){
+console.log("Found valid key with " + key);
+      
+      let matchRes = match(from[key], to, value);
+      if (matchRes == MatchingResults.FULL){
+        curMatchType = MatchingResults.FULL;
+      }
+
+      }
+          }
+  }
+
+  return curMatchType;
 };
 
-const matchAndReplace = (
-    statement: swc.Statement,
-    from: Object,
-    to: Object
-) => {
-    for (const [key, value] of Object.entries(from)) {
-    }
-};
+
 
 main();

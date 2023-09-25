@@ -1,5 +1,5 @@
 import { Statement, VariableDeclarator } from "@swc/types";
-import { MatchStatement } from "../types";
+import { MatchStatement, WildCardType } from "../types";
 
 export const from: MatchStatement = {
     type: "VariableDeclaration",
@@ -8,7 +8,7 @@ export const from: MatchStatement = {
         end: 13,
         ctxt: 0,
     },
-    kind: "var",
+    kind: WildCardType.ANYTHING,
     declare: false,
     declarations: [
         {
@@ -58,7 +58,7 @@ export const to: VariableDeclarator[] = [
                 end: 6,
                 ctxt: 2,
             },
-            value: "a",
+            value: "Inserted_By_Program",
             optional: false,
         },
         init: {
@@ -69,7 +69,7 @@ export const to: VariableDeclarator[] = [
                 ctxt: 0,
             },
             value: 100,
-            raw: "100",
+            raw: "InsertedValue!",
         },
         definite: false,
     },
