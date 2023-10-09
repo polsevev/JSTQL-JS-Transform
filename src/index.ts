@@ -45,7 +45,8 @@ const main = async () => {
 const matchStatements = async (module: swc.Script) => {
   let fromLocal = from;
   let toLocal = to;
-
+  let key: "body" = "body";
+  module[key]  
   return match(fromLocal, toLocal, module.body);
 };
 
@@ -63,7 +64,7 @@ const match = (from: any, to: any, module: swc.Statement[]): any => {
   for (const [key, value] of Object.entries(module)){
     if (from[key] && key != "span"){
       console.log(from[key] + " == " + value);
-      if (from[key] == value){
+      if (from[key as any] == value){
 console.log("Found valid key with " + key);
       
       let matchRes = match(from[key], to, value);
