@@ -1,19 +1,23 @@
 {
-  "name": "didactic-chainsaw",
-  "module": "index.ts",
-  "type": "module",
-  "devDependencies": {
-    "@swc/cli": "^0.1.62",
-    "@types/node": "^20.5.9",
-    "bun-types": "latest",
-    "typescript": "^5.2.2"
-  },
-  "dependencies": {
-    "@babel/generator": "^7.23.0",
-    "@babel/parser": "^7.23.0",
-    "@babel/traverse": "^7.23.0",
-    "babel": "^6.23.0",
-    "bun": "^1.0.4",
-    "ts-node": "^10.9.1"
-  }
+    "name": "didactic-chainsaw",
+    "module": "index.ts",
+    "type": "module",
+    "scripts": {
+        "run": "bun run src/index.ts",
+        "watch": "bun --watch src/index.ts"
+    },
+    "devDependencies": {
+        "@swc/cli": "^0.1.62",
+        "@types/node": "^20.5.9",
+        "bun-types": "latest",
+        "typescript": "^5.2.2"
+    },
+    "dependencies": {
+        "@babel/generator": "^7.23.0",
+        "@babel/parser": "^7.23.0",
+        "@babel/traverse": "^7.23.0",
+        "babel": "^6.23.0",
+        "bun": "^1.0.4",
+        "ts-node": "^10.9.1"
+    }
 }
