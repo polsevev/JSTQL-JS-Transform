@@ -1,10 +1,11 @@
 import * as babelparser from "../babel/packages/babel-parser";
-
+import { parseApplicableTo } from "./parser/parse";
+import { TransformRecipe, transform } from "./transform/transform";
 /*
 proposal await_to_promise {
     applicable to {
         let a = await b();
-        console.log(b);
+        <<CONSUME>>
     }
 
     transform to {
@@ -14,13 +15,22 @@ proposal await_to_promise {
     }
 
 }
-
-
 */
 
+const transformExample:TransformRecipe = {
+    applicableTo: `let a = await b();<<REST_BLOCK:rest>>`,
+    consumeBlock: true,
+    identifiers: ["b", "a", "rest"],
+    transformTo: "b().then((a) => {<<REST_BLOCK:rest>>})"
+}
+const code = "let a = await b(); console.log(a);"
 
-const main = (
+const main = (): void => {
+    transform(transformExample, code);
 
-): void => {};
+    
+
+    
+};
 
 main();
