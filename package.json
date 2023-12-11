@@ -16,6 +16,7 @@
         "@babel/generator": "^7.23.0",
         "@babel/parser": "^7.23.0",
         "@babel/traverse": "^7.23.0",
+        "@types/babel-traverse": "^6.25.10",
         "babel": "^6.23.0",
         "bun": "^1.0.4",
         "ts-node": "^10.9.1"
