@@ -1,0 +1,19 @@
+proposal p1 {
+    applicable to {
+        "let a = 0;"
+    }
+    replace with {
+        "SOMETHING"
+    }
+}
+
+
+proposal p2 {
+    applicable to {
+        "let a = 0;"
+    }
+    replace with {
+        "SOMETHING"
+    }
+}
+
