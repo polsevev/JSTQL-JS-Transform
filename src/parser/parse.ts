@@ -1,50 +1,78 @@
+import * as babelparser from "@babel/parser";
 
-// This needs to support multiple commands in future
+import * as t from "@babel/types";
 
-export interface Command{
-    commandName: string,
-    commandIdentifier: string,
+export interface InternalDSLVariable {
+    type: string[];
+    dsl_name: string;
 }
 
-export interface ApplicableToResult{
-    commands: Command[],
-    applicableTo: string,
+export interface InternalParseResult {
+    internals: Map<string, InternalDSLVariable>;
+    cleanedJS: string;
 }
 
-export function parseApplicableTo(applicableTo:string) :ApplicableToResult {
+export function parseInternal(applicableTo: string): InternalParseResult {
+    let lastChar: null | string = null;
+    let inDslParseMode = false;
 
-    let applicableToIter = applicableTo[Symbol.iterator]();
+    let inDslParseString = "";
 
-    let applicableToOut = "";
+    let internalParseResult: InternalParseResult = {
+        internals: new Map(),
+        cleanedJS: "",
+    };
 
-    let commands:Command[] = [];
-    let curCommandName = "";
-    let curCommandIdentifier = "";
-
-    let nextIter;
-    while(!(nextIter = applicableToIter.next()).done){
-        if (nextIter.value === "<" && applicableToIter.next().value === "<") {
-            let commandChar;
-            let commandName = "";
-            
-            while((commandChar = applicableToIter.next()).value != ":"){
-                commandName += commandChar.value;    
+    for (let char of applicableTo) {
+        if (inDslParseMode) {
+            if (char == ">" && lastChar == ">") {
+                //remove first closing >
+                inDslParseString = inDslParseString.slice(0, -1);
+                let { identifier, type, replaceWith } =
+                    parseInternalString(inDslParseString);
+                internalParseResult.cleanedJS += replaceWith;
+                internalParseResult.internals.set("___" + identifier, {
+                    type: type,
+                    dsl_name: identifier,
+                });
+                inDslParseString = "";
+                inDslParseMode = false;
+                continue;
             }
 
-            let commandIdentifier = "";
-
-            while((commandChar = applicableToIter.next()).value != ">"){
-                commandIdentifier += commandChar.value;    
+            inDslParseString += char;
+        } else {
+            if (char == "<" && lastChar == "<") {
+                //Remove previous <
+                internalParseResult.cleanedJS =
+                    internalParseResult.cleanedJS.slice(0, -1);
+                inDslParseMode = true;
+                continue;
             }
 
-            let _ = applicableToIter.next();
-
-            commands.push({commandIdentifier, commandName});
-        }else{
-            applicableToOut += nextIter.value;
+            internalParseResult.cleanedJS += char;
         }
+
+        lastChar = char;
     }
 
-    return {applicableTo:applicableToOut, commands};
+    return internalParseResult;
+}
 
+function parseInternalString(dslString: string) {
+    let splitted = dslString.split(":");
+
+    return {
+        identifier: splitted[0],
+        type: splitted.length > 1 ? splitted[1].split("|") : [""],
+        replaceWith: "___" + splitted[0],
+    };
+}
+
+export function parse_with_plugins(
+    code: string
+): babelparser.ParseResult<t.File> {
+    return babelparser.parse(code, {
+        plugins: [["pipelineOperator", { proposal: "hack", topicToken: "%" }]],
+    });
 }

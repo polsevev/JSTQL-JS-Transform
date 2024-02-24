@@ -3,12 +3,13 @@
         "rootDir": "src",
         "outDir": "dist",
         "strict": true,
-        "target": "es6",
+        "target": "es2017"17",
         "module": "commonjs",
         "sourceMap": true,
         "esModuleInterop": true,
         "moduleResolution": "node",
         "types": ["bun-types"]
     },
-    "include": ["src", "babel/packages/babel-parser"]
+    "include": ["src"],
+    "exclude": ["babel"]
 }
