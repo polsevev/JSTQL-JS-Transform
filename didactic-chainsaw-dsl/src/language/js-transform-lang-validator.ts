@@ -1,5 +1,5 @@
-import type { ValidationAcceptor, ValidationChecks } from "langium";
-import type { JsTransformLangAstType, Proposal } from "./generated/ast.js";
+import type { ValidationChecks } from "langium";
+import type { JsTransformLangAstType } from "./generated/ast.js";
 import type { JsTransformLangServices } from "./js-transform-lang-module.js";
 
 /**
@@ -9,7 +9,7 @@ export function registerValidationChecks(services: JsTransformLangServices) {
     const registry = services.validation.ValidationRegistry;
     const validator = services.validation.JsTransformLangValidator;
     const checks: ValidationChecks<JsTransformLangAstType> = {
-        Proposal: validator.checkPersonStartsWithCapital,
+        //Person: validator.checkPersonStartsWithCapital,
     };
     registry.register(checks, validator);
 }
@@ -18,6 +18,7 @@ export function registerValidationChecks(services: JsTransformLangServices) {
  * Implementation of custom validations.
  */
 export class JsTransformLangValidator {
+    /*
     checkPersonStartsWithCapital(
         proposal: Proposal,
         accept: ValidationAcceptor
@@ -31,4 +32,5 @@ export class JsTransformLangValidator {
             }
         }
     }
+    */
 }

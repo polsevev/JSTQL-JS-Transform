@@ -1,4 +1,7 @@
-proposal (async) {
+
+
+
+proposal async {
     applicable to {
         let _$_a_$_ = await _$_expr_$_();
         console.log(_$_a_$_);
