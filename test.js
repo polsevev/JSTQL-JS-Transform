@@ -1,160 +1,108 @@
-require("@risingstack/trace");
-const Discord = require("discord.js");
-const ytdl = require("ytdl-core");
-const bot = new Discord.Client();
-const fs = new require("fs");
-const path = require("path");
-const probe = require("pmx").probe();
-const jsonfile = require("jsonfile");
-const commandCooldown = require("./helpers/commandCooldown.js");
-let cleverbot = require("cleverbot.io"),
-    clever = new cleverbot(
-        "jp6wu9XZbYdoICmo",
-        "54jV1VcMNxGQyc2cdKUFUpjkPVo3bTr2"
-    );
+function parse() {
+    const input = document.getElementById("input").value;
+    const data = input.slice(32);
 
-const log = require("./helpers/log.js");
+    const compressedData = decode_base64(data);
+    const uncompressed = pako.inflate(compressedData, { to: "string" });
+    const json = JSON.parse(uncompressed);
+    console.log(json);
 
-bot.on("ready", () => {
-    bot.user.setGame(".help");
+    convertToDesktop(json);
+}
 
-    (function loop(i) {
-        setTimeout(function () {
-            guilds.set(bot.guilds.size);
-            if (true) {
-                loop(i);
-            }
-        }, 1000);
-    })(10);
+function convertToDesktop(json) {
+    const newValues = {
+        crb: false,
+        newClanRaidClassId: 0,
+        newClanRaidClassLevel: 0,
+        pendingImmortalSouls: 0,
+        pendingRaidRubies: 0,
+        immortalSouls: 0,
+        lastPurchaseTime: 0,
+        lastRaidAttemptTimestamp: 0,
+        lastRaidRewardCheckTimestamp: 0,
+        shouldShowHZERoster: false,
+        lastBonusRewardCheckTimestamp: 0,
+    };
 
-    log(
-        `Ready to serve ${bot.users.size} users, in ${bot.channels.size} channels of ${bot.guilds.size} servers.`
-    );
-});
+    const mappedValues = {
+        rubies: Math.round(json.rubies / 10),
+    };
 
-fs.readFile("config.json", (err, data) => {
-    if (err) {
-        log("Config file does not exist, creating one.");
+    const pcSpecificValues = {
+        readPatchNumber: "1.0e12",
+        saveOrigin: "pc",
+    };
 
-        let obj = {
-            discordToken: "TOKEN",
-            discordBotsToken: "TOKEN",
-        };
+    const hash = "7a990d405d2c6fb93aa8fbb0ec1a3b23";
+    const newData = {
+        ...newValues,
+        ...json,
+        ...mappedValues,
+        ...pcSpecificValues,
+    };
+    const compressed = pako.deflate(JSON.stringify(newData), { to: "string" });
+    const base64 = btoa(compressed);
 
-        jsonfile.spaces = 4;
-        jsonfile.writeFile("config.json", obj, (err) => {
-            console.log(err);
-        });
-        process.exit(1);
-    } else {
-        config = require("./config.json");
+    const finalSaveString = hash + base64;
+    document.getElementById("output_output").innerText = finalSaveString;
+    showOutput();
+}
 
-        bot.login(config.discordToken);
-    }
-});
+function showOutput() {
+    document.getElementById("outputs").style.visibility = "visible";
+}
 
-global.skips = {};
-global.queue = {
-    test: "test",
-};
+function copyOutput() {
+    const output = document.getElementById("output_output");
+    output.disabled = false;
+    output.focus();
+    output.select();
+    document.execCommand("copy");
+    output.disabled = true;
+    const successElement = document.getElementById("copy_success_msg");
+    successElement.style.visibility = "visible";
+    setTimeout(() => (successElement.style.visibility = "hidden"), 4000);
+}
 
-global.dispatchers = new Map();
-global.connections = new Map();
-global.voices = new Map();
-global.streams = new Map();
+function decode_base64(s) {
+    let e = {},
+        i,
+        k,
+        v = [],
+        r = "",
+        w = String.fromCharCode;
+    let n = [
+        [65, 91],
+        [97, 123],
+        [48, 58],
+        [43, 44],
+        [47, 48],
+    ];
 
-let config = "ERR";
-
-global.allstreams = 0;
-global.counter = probe.counter({
-    name: "Streams",
-});
-let guilds = probe.metric({
-    name: "Guilds",
-});
-
-let userCooldown = new Map();
-
-bot.commands = new Discord.Collection();
-bot.aliases = new Discord.Collection();
-fs.readdir("./commands/", (err, files) => {
-    if (err) console.error(err);
-    log(`Loading a total of ${files.length} commands.`);
-    files.forEach((f) => {
-        let props = require(`./commands/${f}`);
-        log(`Loading Command: ${props.info.name}. :ok_hand:`);
-        bot.commands.set(props.info.name, props);
-        /*
-		props.conf.aliases.forEach(alias => {
-			bot.aliases.set(alias, props.info.name);
-		});
-		*/
-    });
-});
-
-bot.on("message", (msg) => {
-    const prefix = ".";
-
-    let id = bot.user.id;
-    let clevername = new RegExp(`^<@!?${id}>`);
-
-    if (msg.content.startsWith(prefix)) {
-    } else if (clevername.test(msg.content)) {
-    } else return;
-    if (msg.author.bot) return;
-
-    if (msg.guild) {
-        if (!queue[msg.guild.id]) {
-            queue[msg.guild.id] = [];
+    for (z in n) {
+        for (i = n[z][0]; i < n[z][1]; i++) {
+            v.push(w(i));
         }
-    } else return;
-
-    let command = msg.content.split(" ")[0].slice(prefix.length);
-    let params = msg.content.split(" ").slice(1);
-    //let perms = bot.elevation(msg);
-    let cmd;
-
-    if (!userCooldown.get(msg.author.id)) {
-        userCooldown.set(msg.author.id, 0);
+    }
+    for (i = 0; i < 64; i++) {
+        e[v[i]] = i;
     }
 
-    if (bot.commands.has(command)) {
-        if (!commandCooldown(userCooldown.get(msg.author.id))) {
-            userCooldown.set(msg.author.id, Date.now());
-            cmd = bot.commands.get(command);
-        } else msg.channel.sendMessage("You're sending commands too quickly!");
-    } else if (bot.aliases.has(command)) {
-        cmd = bot.commands.get(bot.aliases.get(command));
+    for (i = 0; i < s.length; i += 72) {
+        let b = 0,
+            c,
+            x,
+            l = 0,
+            o = s.substring(i, i + 72);
+        for (x = 0; x < o.length; x++) {
+            c = e[o.charAt(x)];
+            b = (b << 6) + c;
+            l += 6;
+            while (l >= 8) {
+                r += w((b >>> (l -= 8)) % 256);
+            }
+        }
     }
-    if (cmd) {
-        cmd.run(bot, msg, params);
-    }
-
-    if (clevername.test(msg.content)) {
-        console.log(
-            msg.author.username +
-                " (" +
-                msg.author.id +
-                ") issued command: " +
-                msg.content
-        );
-
-        let string = msg.content;
-        string = msg.content.split(" ");
-        string.shift();
-        string.join(" ");
-
-        clever.setNick(msg.author.username);
-
-        clever.create(function (err, session) {
-            if (err) log(err);
-            clever.ask(string, function (err, response) {
-                if (err) log(err);
-                msg.channel
-                    .sendMessage(response)
-                    .then((msg) => log(`Sent message: ${msg.content}`))
-                    .catch(console.error);
-            });
-        });
-    }
-});
+    return r;
+}

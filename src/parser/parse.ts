@@ -3,69 +3,66 @@ import * as babelparser from "@babel/parser";
 import * as t from "@babel/types";
 
 export interface InternalDSLVariable {
-    type: string[];
-    dsl_name: string;
+    [internals: string]: string[];
 }
 
 export interface InternalParseResult {
-    internals: Map<string, InternalDSLVariable>;
+    prelude: InternalDSLVariable;
     cleanedJS: string;
 }
 
-export function parseInternal(applicableTo: string): InternalParseResult {
-    let lastChar: null | string = null;
-    let inDslParseMode = false;
+export function parseInternal(code: string): InternalParseResult {
+    let cleanedJS = "";
+    let temp = "";
+    let flag = false;
+    let prelude: InternalDSLVariable = {};
 
-    let inDslParseString = "";
-
-    let internalParseResult: InternalParseResult = {
-        internals: new Map(),
-        cleanedJS: "",
-    };
-
-    for (let char of applicableTo) {
-        if (inDslParseMode) {
-            if (char == ">" && lastChar == ">") {
-                //remove first closing >
-                inDslParseString = inDslParseString.slice(0, -1);
-                let { identifier, type, replaceWith } =
-                    parseInternalString(inDslParseString);
-                internalParseResult.cleanedJS += replaceWith;
-                internalParseResult.internals.set("___" + identifier, {
-                    type: type,
-                    dsl_name: identifier,
-                });
-                inDslParseString = "";
-                inDslParseMode = false;
-                continue;
-            }
-
-            inDslParseString += char;
-        } else {
-            if (char == "<" && lastChar == "<") {
-                //Remove previous <
-                internalParseResult.cleanedJS =
-                    internalParseResult.cleanedJS.slice(0, -1);
-                inDslParseMode = true;
-                continue;
-            }
-
-            internalParseResult.cleanedJS += char;
+    for (let i = 0; i < code.length; i++) {
+        if (code[i] === "<" && code[i + 1] === "<") {
+            // From now in we are inside of the DSL custom block
+            flag = true;
+            i += 1;
+            continue;
         }
 
-        lastChar = char;
-    }
+        if (flag && code[i] === ">" && code[i + 1] === ">") {
+            // We encountered a closing tag
+            flag = false;
+            let { identifier, types } = parseInternalString(temp);
 
-    return internalParseResult;
+            cleanedJS += identifier;
+
+            prelude[identifier] = types;
+            i += 1;
+            temp = "";
+            continue;
+        }
+
+        if (flag) {
+            temp += code[i];
+        } else {
+            cleanedJS += code[i];
+        }
+    }
+    return { prelude, cleanedJS };
 }
 
-function parseInternalString(dslString: string) {
-    let splitted = dslString.split(":");
+function parseInternalString(dslString: string): {
+    identifier: string;
+    types: string[];
+} {
+    let [identifier, typeString, ..._] = dslString
+        .replace(/\s/g, "")
+        .split(":");
+
+    if (_.length > 0) {
+        // This is an error, and it means we probably have encountered two bitshift operators
+        throw new Error("Probably encountered bitshift");
+    }
 
     return {
-        identifier: splitted[0],
-        type: splitted.length > 1 ? splitted[1].split("|") : [""],
-        replaceWith: "___" + splitted[0],
+        identifier,
+        types: typeString.length > 0 ? typeString.split("|") : [""],
     };
 }
 
@@ -76,3 +73,10 @@ export function parse_with_plugins(
         plugins: [["pipelineOperator", { proposal: "hack", topicToken: "%" }]],
     });
 }
+
+function testParseInternal() {
+    parseInternal(`
+        <<a:Identifier>>(<< b : Identifier | MemberExpression >>);
+    `);
+}
+testParseInternal();
