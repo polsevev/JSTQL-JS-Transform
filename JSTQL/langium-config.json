@@ -1,0 +1,12 @@
+{
+    "projectName": "Jstql",
+    "languages": [{
+        "id": "jstql",
+        "grammar": "src/language/jstql.langium",
+        "fileExtensions": [".jstql"],
+        "textMate": {
+            "out": "syntaxes/jstql.tmLanguage.json"
+        }
+    }],
+    "out": "src/language/generated"
+}

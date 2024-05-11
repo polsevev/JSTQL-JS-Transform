@@ -32,12 +32,12 @@ function startLanguageClient(context: vscode.ExtensionContext): LanguageClient {
         debug: { module: serverModule, transport: TransportKind.ipc, options: debugOptions }
     };
 
-    const fileSystemWatcher = vscode.workspace.createFileSystemWatcher('**/*.jstl');
+    const fileSystemWatcher = vscode.workspace.createFileSystemWatcher('**/*.jstql');
     context.subscriptions.push(fileSystemWatcher);
 
     // Options to control the language client
     const clientOptions: LanguageClientOptions = {
-        documentSelector: [{ scheme: 'file', language: 'js-transform-lang' }],
+        documentSelector: [{ scheme: 'file', language: 'jstql' }],
         synchronize: {
             // Notify the server about file changes to files contained in the workspace
             fileEvents: fileSystemWatcher
@@ -46,8 +46,8 @@ function startLanguageClient(context: vscode.ExtensionContext): LanguageClient {
 
     // Create the language client and start the client.
     const client = new LanguageClient(
-        'js-transform-lang',
-        'js-transform-lang',
+        'jstql',
+        'JSTQL',
         serverOptions,
         clientOptions
     );

@@ -1,0 +1,32 @@
+proposal DoExpression{
+    pair arrowFunction{
+        applicable to {
+            "() => {
+                <<blockStatements: anyStatementList>>
+                return << returnExpr: Expr >>
+            }"
+        }
+        transform to {
+            "do {
+                << blockStatementsss >>
+                << returnExpr >>
+            }"
+        }
+    }
+
+    pair immediatelyInvokedUnnamedFunction {
+        applicable to {
+            "function(){
+                <<blockStatements: anyNStatements>>
+                return << returnExpr: Expr >>
+            }();"
+        }
+
+        transform to {
+            "do {
+                << blockStatements >>
+                << returnExpr >>
+            }"
+        }
+    }
+}
