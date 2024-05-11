@@ -1,5 +1,5 @@
 {
-    "name": "didactic-chainsaw-dsl",
+    "name": "JSTQL",
     "description": "Please enter a brief description here",
     "version": "0.0.1",
     "files": [
@@ -32,7 +32,7 @@
         "concurrently": "~8.2.1",
         "esbuild": "~0.19.2"
     },
-    "displayName": "didactic-chainsaw-dsl",
+    "displayName": "JSTQL",
     "engines": {
         "vscode": "^1.67.0",
         "node": ">=16.0.0"
@@ -43,28 +43,28 @@
     "contributes": {
         "languages": [
             {
-                "id": "js-transform-lang",
+                "id": "jstql",
                 "aliases": [
-                    "js-transform-lang",
-                    "js-transform-lang"
+                    "JSTQL",
+                    "jstql"
                 ],
-                "extensions": [".jstl"],
+                "extensions": [".jstql"],
                 "configuration": "./language-configuration.json"
             }
         ],
         "grammars": [
             {
-                "language": "js-transform-lang",
-                "scopeName": "source.js-transform-lang",
-                "path": "syntaxes/js-transform-lang.tmLanguage.json"
+                "language": "jstql",
+                "scopeName": "source.jstql",
+                "path": "syntaxes/jstql.tmLanguage.json"
             }
         ]
     },
     "activationEvents": [
-        "onLanguage:js-transform-lang"
+        "onLanguage:jstql"
     ],
     "main": "./out/extension/main.cjs",
     "bin": {
-        "js-transform-lang-cli": "./bin/cli.js"
+        "jstql-cli": "./bin/cli.js"
     }
 }
