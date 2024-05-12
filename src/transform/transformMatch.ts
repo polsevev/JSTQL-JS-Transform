@@ -9,31 +9,28 @@ import {
     showTreePaired,
 } from "../data_structures/tree";
 import { InternalDSLVariable } from "../parser/parse";
-import { Match, MatchedTreeNode, PairedNodes } from "../matcher/matcher";
+import { MatchedTreeNode, PairedNodes } from "../matcher/matcher";
 import traverse from "@babel/traverse";
 
 export function transformer(
-    matches: Match,
+    match: TreeNode<PairedNodes>,
     trnTo: TreeNode<t.Node>,
     output: t.Node,
     inputCode: t.Node
 ) {
-    for (let match of matches.statements) {
-        transformMatch(match, trnTo, output);
-    }
+    transformMatch(match, trnTo, output);
 
     if (output.type == "Program") {
         output = output.body[0];
     }
 
-    for (let match of matches.statements)
-        traverse(inputCode, {
-            enter(path) {
-                if (path.node === match.element.codeNode) {
-                    path.replaceWith(output);
-                }
-            },
-        });
+    traverse(inputCode, {
+        enter(path) {
+            if (path.node === match.element.codeNode) {
+                path.replaceWith(output);
+            }
+        },
+    });
 }
 
 export function transformMatch(
@@ -51,7 +48,7 @@ export function transformMatch(
             traverse(output, {
                 enter(path) {
                     if (path.isIdentifier({ name: trnTo.element.name })) {
-                        //console.log(match.element.codeNode);
+                        console.log(match.element.codeNode);
                         if (match.element.codeNode) {
                             path.replaceWith(match.element.codeNode);
                         }

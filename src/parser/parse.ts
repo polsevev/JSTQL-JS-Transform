@@ -62,7 +62,7 @@ function parseInternalString(dslString: string): {
 
     return {
         identifier,
-        types: typeString.length > 0 ? typeString.split("|") : [""],
+        types: typeString ? typeString.split("|") : [""],
     };
 }
 
@@ -73,10 +73,3 @@ export function parse_with_plugins(
         plugins: [["pipelineOperator", { proposal: "hack", topicToken: "%" }]],
     });
 }
-
-function testParseInternal() {
-    parseInternal(`
-        <<a:Identifier>>(<< b : Identifier | MemberExpression >>);
-    `);
-}
-testParseInternal();
