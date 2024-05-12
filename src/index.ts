@@ -139,16 +139,16 @@ const main = async () => {
     //transform(selfHostedTransformExampleMultiStmt, codeFromFile);
 
     const jstql_file =
-        "/home/rolfmg/Coding/Master/didactic-chainsaw/dsl_files/test_hello.jstl";
+        "/home/rolfmg/Coding/Master/didactic-chainsaw/dsl_files/pipeline.jstql";
     const test_file = Bun.file(jstql_file);
     const test_JSTQL = await test_file.text();
-    console.log(parseJSTQL(test_JSTQL));
-    /*
-    await Bun.write(
-        "../output.js",
-        transform(selfHostedTransformExampleMultiStmt, codeFromFile)
-    );
+    let proposals = await parseJSTQL(test_JSTQL);
 
+    await Bun.write(
+        "output.js",
+        transform(proposals[0].pairs[0], codeFromFile)
+    );
+    /*
     console.log(
         transform(selfHostedTransformExampleMultiStmt, selfHostedTestMultiStmt)
     );

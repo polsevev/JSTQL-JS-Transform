@@ -9,7 +9,7 @@ export function registerValidationChecks(services: JstqlServices) {
     const registry = services.validation.ValidationRegistry;
     const validator = services.validation.JstqlValidator;
     const checks: ValidationChecks<JstqlAstType> = {
-        Pair: validator.validateWildcardAplTo,
+        Pair: validator.validateWildcards,
     };
     registry.register(checks, validator);
 }
@@ -18,28 +18,30 @@ export function registerValidationChecks(services: JstqlServices) {
  * Implementation of custom validations.
  */
 export class JstqlValidator {
-    validateWildcardAplTo(pair: Pair, accept: ValidationAcceptor): void {
-        let validationResultAplTo = validateWildcardAplTo(
-            collectWildcard(pair.aplTo.apl_to_code.split(""))
-        );
-        if (validationResultAplTo.errors.length != 0) {
-            accept("error", validationResultAplTo.errors.join("\n"), {
-                node: pair.aplTo,
-                property: "apl_to_code",
-            });
-        }
+    validateWildcards(pair: Pair, accept: ValidationAcceptor): void {
+        try {
+            let validationResultAplTo = validateWildcardAplTo(
+                collectWildcard(pair.aplTo.apl_to_code.split(""))
+            );
+            if (validationResultAplTo.errors.length != 0) {
+                accept("error", validationResultAplTo.errors.join("\n"), {
+                    node: pair.aplTo,
+                    property: "apl_to_code",
+                });
+            }
 
-        let validationResultTraTo = validateWildcardTraTo(
-            collectWildcard(pair.traTo.transform_to_code.split("")),
-            validationResultAplTo.env
-        );
+            let validationResultTraTo = validateWildcardTraTo(
+                collectWildcard(pair.traTo.transform_to_code.split("")),
+                validationResultAplTo.env
+            );
 
-        if (validationResultTraTo.length != 0) {
-            accept("error", validationResultTraTo.join("\n"), {
-                node: pair.traTo,
-                property: "transform_to_code",
-            });
-        }
+            if (validationResultTraTo.length != 0) {
+                accept("error", validationResultTraTo.join("\n"), {
+                    node: pair.traTo,
+                    property: "transform_to_code",
+                });
+            }
+        } catch (e) {}
     }
 }
 
@@ -99,26 +101,5 @@ function collectWildcard(code: string[]): string[] {
             i += 1;
         }
     }
-    console.log(wildcards);
     return wildcards;
 }
-function testValidator() {
-    let res = validateWildcardAplTo(
-        collectWildcard(
-            `() => {
-                <<blockStatements: anyStatementList>>
-                return << returnExpr: Expr >>
-            }`.split("")
-        )
-    );
-    console.log(res);
-    let res2 = validateWildcardTraTo(
-        collectWildcard(
-            `<< blockStatements >>
-                << returnExpr >>`.split("")
-        ),
-        res.env
-    );
-    console.log(res2);
-}
-testValidator();

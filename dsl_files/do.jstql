@@ -2,13 +2,13 @@ proposal DoExpression{
     pair arrowFunction{
         applicable to {
             "() => {
-                <<blockStatements: anyStatementList>>
+                <<blockStatements: anyStatementList | hello >>
                 return << returnExpr: Expr >>
             }"
         }
         transform to {
             "do {
-                << blockStatementsss >>
+                << blockStatements >>
                 << returnExpr >>
             }"
         }

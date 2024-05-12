@@ -24,9 +24,6 @@ export const makeTree = (
     let first: TreeNode<t.Node> | null = null;
     traverse(ast, {
         enter(path: any) {
-            //console.log(path.node);
-            //console.log("Entered: ", path.node.type);
-
             let node: TreeNode<t.Node> = new TreeNode<t.Node>(
                 last,
                 path.node as t.Node
@@ -43,12 +40,8 @@ export const makeTree = (
             }
         },
     });
-    //console.log(first.children);
-
     if (first != null) {
         return first;
-    } else {
-        return undefined;
     }
 };
 export const showTree = (tree: TreeNode<t.Node>, idents: number = 0) => {
