@@ -97,9 +97,7 @@ export class Matcher {
     }
 
     // This is broken
-    multiStatementMatcher(code: TreeNode<t.Node>, aplTo: TreeNode<t.Node>) {
-        console.log("Currently unsupported");
-    }
+    multiStatementMatcher(code: TreeNode<t.Node>, aplTo: TreeNode<t.Node>) {}
 
     match(code: TreeNode<t.Node>, aplTo: TreeNode<t.Node>) {}
     private checkCodeNode(code_node: t.Node, aplTo: t.Node): boolean {
@@ -138,28 +136,5 @@ export class Matcher {
         }
 
         return true;
-    }
-
-    private buildPairTree(
-        code: TreeNode<t.Node>,
-        aplTo: TreeNode<t.Node>
-    ): TreeNode<PairedNodes> {
-        let temp: TreeNode<PairedNodes> = new TreeNode(null, {
-            codeNode: code.element,
-            aplToNode: aplTo.element,
-        });
-        if (code.children.length >= aplTo.children.length) {
-            for (let i = 0; i < aplTo.children.length; i++) {
-                let child = this.buildPairTree(
-                    code.children[i],
-                    aplTo.children[i]
-                );
-                temp.children.push(child);
-            }
-        } else {
-            console.log("ERROR");
-        }
-
-        return temp;
     }
 }
