@@ -1,0 +1,10 @@
+proposal test_single_stmt{
+    pair one {
+        applicable to {
+            "let <<aaaa: Identifier >> = <<bbbb: Expression | Identifier>>"
+        }
+        transform to {
+            "let <<aaaa>> = () => <<bbbb>>"
+        }
+    }
+}

@@ -15,7 +15,7 @@ import {
 import { runMatch } from "../matcher/matcher";
 import { transformMatch, transformer } from "./transformMatch";
 import { preludeBuilder } from "../parser/preludeBuilder";
-
+import * as babelparser from "@babel/parser";
 export interface Proposal {
     pairs: TransformRecipe[];
 }
@@ -27,7 +27,7 @@ export interface TransformRecipe {
 export interface SelfHostedRecipe extends TransformRecipe {
     prelude: string;
 }
-export function transform(recipe: TransformRecipe, code: string) {
+export function transform(recipe: TransformRecipe, code: string): string {
     if ((<SelfHostedRecipe>recipe).prelude !== undefined) {
         // We are using the self hosted version
         return transformSelfHosted(
@@ -61,7 +61,7 @@ function transformSelfHosted(
     recipe: TransformRecipe,
     internals: InternalDSLVariable,
     code: string
-) {
+): string {
     console.log(recipe);
     let codeAST = parse_with_plugins(code);
     let codeTree = makeTree(codeAST);
@@ -81,25 +81,20 @@ function transformSelfHosted(
 
     let matches = runMatch(codeTree, applicableToTree, internals);
 
-    for (let match of matches) {
-        showTreePaired(match);
-        console.log(generate(match.element.codeNode).code);
-    }
     console.log(matches.length);
     for (let match of matches.reverse()) {
         //console.log(transformToTree.element);
-        let output = structuredClone(transformToTree.element);
+        // There is a bug here, for some reason it works sometimes when Program and sometimes when File, no clue why?????
+        let output = parse_with_plugins(recipe.transformTo).program;
         try {
             transformer(match, transformToTree, output, codeAST);
         } catch (error) {
-            console.log("We failed to transform an element!");
+            console.log(error);
         }
     }
-
     console.log("Final generated code: \n");
 
     let output = generate(codeAST, { topicToken: "%" }).code;
     //showTree(transformToTree);
-
     return output;
 }
