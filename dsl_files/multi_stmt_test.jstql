@@ -1,0 +1,16 @@
+proposal MultiStmt{
+    pair Smthn{
+        applicable to{
+            "let <<something:Identifier>> = <<aiai:Identifier | MemberExpression>>();
+            let <<binaryExprLOL:Identifier>> = 1 + 1;
+            "
+        }
+
+        transform to {
+            "() => {
+                let <<something>> = <<aiai>>();
+                return <<binaryExprLOL>>;
+            }"
+        }
+    }
+}

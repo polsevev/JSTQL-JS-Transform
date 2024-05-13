@@ -11,6 +11,7 @@ import {
 import { InternalDSLVariable } from "../parser/parse";
 import { MatchedTreeNode, PairedNodes } from "../matcher/matcher";
 import traverse from "@babel/traverse";
+import generate from "@babel/generator";
 
 export function transformer(
     match: TreeNode<PairedNodes>,
@@ -48,7 +49,6 @@ export function transformMatch(
             traverse(output, {
                 enter(path) {
                     if (path.isIdentifier({ name: trnTo.element.name })) {
-                        console.log(match.element.codeNode);
                         if (match.element.codeNode) {
                             path.replaceWith(match.element.codeNode);
                         }
