@@ -3,7 +3,7 @@ import { TransformRecipe, transform } from "../transform/transform";
 
 const transformExample: TransformRecipe = {
     applicableTo: `<<a>>(<<b:Identifier|Expression>>);`,
-    transformTo: "b |> a(%)",
+    transformTo: "<<b>> |> <<a>>(%)",
 };
 const code =
     "a(something);a(1+1);something(some_other_thing + 1 + 10 + 100); console.log(a)";

@@ -10,7 +10,7 @@ import {
 
 import { parseDSLtoAST } from "../didactic-chainsaw-dsl/src/JSTQL_interface/fetchAST";
 import { parseJSTQL } from "./langium/langiumRunner";
-const path = "test.js";
+const path = "test_files/test.js";
 const file = Bun.file(path);
 const codeFromFile = await file.text();
 const main = async () => {
@@ -23,7 +23,7 @@ const main = async () => {
     let proposals = await parseJSTQL(test_JSTQL);
 
     await Bun.write(
-        "output.js",
+        "output_files/output.js",
         transform(proposals[0].pairs[0], codeFromFile)
     );
 };

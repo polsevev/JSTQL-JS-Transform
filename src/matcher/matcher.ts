@@ -22,17 +22,29 @@ export function runMatch(
     internals: InternalDSLVariable
 ): TreeNode<PairedNodes>[] {
     // Special case for a single expression, we have to remove "ExpressionStatement" node.
-    if (
-        applicableTo.children.length === 1 &&
-        applicableTo.children[0].element.type === "ExpressionStatement"
-    ) {
-        let matcher = new Matcher(
-            internals,
-            applicableTo.children[0].children[0].element
-        );
-        matcher.singleExprMatcher(code, applicableTo.children[0].children[0]);
-        return matcher.matches;
+    if (applicableTo.children.length === 1) {
+        if (applicableTo.children[0].element.type === "ExpressionStatement") {
+            let matcher = new Matcher(
+                internals,
+                applicableTo.children[0].children[0].element
+            );
+            matcher.singleExprMatcher(
+                code,
+                applicableTo.children[0].children[0]
+            );
+            return matcher.matches;
+        } else {
+            let matcher = new Matcher(
+                internals,
+                applicableTo.children[0].element
+            );
+            matcher.singleExprMatcher(code, applicableTo.children[0]);
+            return matcher.matches;
+        }
     } else {
+        showTree(code);
+        showTree(applicableTo);
+
         let matcher = new Matcher(internals, applicableTo.element);
         matcher.multiStatementMatcher(code, applicableTo);
         return matcher.matches;
@@ -53,28 +65,30 @@ export class Matcher {
         code: TreeNode<t.Node>,
         aplTo: TreeNode<t.Node>
     ): TreeNode<PairedNodes> | undefined {
+        // If we are at start of ApplicableTo, start a new search on each of the child nodes
+        if (aplTo.element === this.aplToFull) {
+            // Perform a new search on all child nodes before trying to verify current node
+            let temp = [];
+            // If any matches bubble up from child nodes, we have to store it
+            for (let code_child of code.children) {
+                let maybeChildMatch = this.singleExprMatcher(code_child, aplTo);
+                if (maybeChildMatch) {
+                    temp.push(maybeChildMatch);
+                }
+            }
+            // Store all full matches
+            this.matches.push(...temp);
+        }
+        // Check if the current matches
+
         let curMatches = this.checkCodeNode(code.element, aplTo.element);
         curMatches =
             curMatches && code.children.length >= aplTo.children.length;
-        // Current does not match and we have searched all the children, so just return early
-        // This ensures we only store the child search when we don't only have a partial match
-        let temp = [];
-        // If any matches bubble up from child nodes, we have to store it
-        for (let code_child of code.children) {
-            let maybeChildMatch = this.singleExprMatcher(code_child, aplTo);
-            if (maybeChildMatch) {
-                temp.push(maybeChildMatch);
-            }
-        }
-
-        // Filter the output for full matches :)
-        this.matches.push(
-            ...temp.filter((x) => x.element.aplToNode === this.aplToFull)
-        );
         if (!curMatches) {
             return;
         }
         // At this point current does match
+        // Perform a search on each of the children of both AplTo and Code.
         let pairedCurrent: TreeNode<PairedNodes> = new TreeNode(null, {
             codeNode: code.element,
             aplToNode: aplTo.element,
@@ -85,7 +99,7 @@ export class Matcher {
                 aplTo.children[i]
             );
             if (childSearch === undefined) {
-                // Failed to get a full match, so break here
+                // Failed to get a full match, so early return here
                 return;
             }
             childSearch.parent = pairedCurrent;
@@ -96,10 +110,71 @@ export class Matcher {
         return pairedCurrent;
     }
 
-    // This is broken
-    multiStatementMatcher(code: TreeNode<t.Node>, aplTo: TreeNode<t.Node>) {}
+    multiStatementMatcher(code: TreeNode<t.Node>, aplTo: TreeNode<t.Node>) {
+        if (
+            code.element.type === "Program" ||
+            code.element.type === "BlockStatement"
+        ) {
+            this.matchMultiHead(code.children, aplTo.children);
+        }
 
-    match(code: TreeNode<t.Node>, aplTo: TreeNode<t.Node>) {}
+        for (let code_child of code.children) {
+            this.multiStatementMatcher(code_child, aplTo);
+        }
+    }
+
+    matchMultiHead(code: TreeNode<t.Node>[], aplTo: TreeNode<t.Node>[]) {
+        // Sliding window the size of aplTo
+        for (let y = 0; y <= code.length - aplTo.length; y++) {
+            let fullMatch = true;
+            let collection: TreeNode<PairedNodes>[] = [];
+            for (let i = 0; i < aplTo.length; i++) {
+                let res = this.exactExprMatcher(code[i + y], aplTo[i]);
+                if (!res) {
+                    fullMatch = false;
+                    break;
+                }
+                collection.push(res);
+            }
+            if (fullMatch) {
+                this.matches.push(...collection);
+            }
+        }
+    }
+    exactExprMatcher(
+        code: TreeNode<t.Node>,
+        aplTo: TreeNode<t.Node>
+    ): TreeNode<PairedNodes> | undefined {
+        let curMatches =
+            this.checkCodeNode(code.element, aplTo.element) &&
+            code.children.length >= aplTo.children.length;
+
+        if (!curMatches) {
+            return undefined;
+        }
+
+        let paired: TreeNode<PairedNodes> = new TreeNode(null, {
+            aplToNode: aplTo.element,
+            codeNode: code.element,
+        });
+
+        for (let i = 0; i < aplTo.children.length; i++) {
+            let childRes = this.exactExprMatcher(
+                code.children[i],
+                aplTo.children[i]
+            );
+            if (!childRes) {
+                // If child is not match the entire thing is not a match;
+                return undefined;
+            }
+            // This is a match, so we store it
+            childRes.parent = paired;
+            paired.children.push(childRes);
+        }
+
+        return paired;
+    }
+
     private checkCodeNode(code_node: t.Node, aplTo: t.Node): boolean {
         // First verify the internal DSL variables
 
