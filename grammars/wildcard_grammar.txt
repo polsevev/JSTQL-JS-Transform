@@ -1,0 +1,17 @@
+
+Wildcard:
+    Identifier ":" TypeExpr ("*"?)
+TypeExpr:
+    BinaryExpr
+
+BinaryExpr: 
+    UnaryExpr { Operator PrimitiveExpr }*
+
+UnaryExpr:
+    {UnaryOperator}? PrimitiveExpr
+
+PrimitiveExpr:
+    GroupExpr | Identifier
+
+GroupExpr:
+    "(" TypeExpr ")"
