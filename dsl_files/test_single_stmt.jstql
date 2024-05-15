@@ -4,7 +4,7 @@ proposal test_single_stmt{
             "let <<aaaa: Identifier >> = <<bbbb: Expression | Identifier>>"
         }
         transform to {
-            "let <<aaaa>> = () => <<bbbb>>"
+            "let <<aaaa>> = 1 + <<bbbb>>;"
         }
     }
 }

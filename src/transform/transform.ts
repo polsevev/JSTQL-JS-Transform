@@ -4,6 +4,8 @@ import generate from "@babel/generator";
 import {
     InternalDSLVariable,
     parseInternal,
+    parseInternalAplTo,
+    parseInternalTraTo,
     parse_with_plugins,
 } from "../parser/parse";
 import {
@@ -42,12 +44,10 @@ export function transform(recipe: TransformRecipe, code: string): string {
         // We are using JSTQL
         // We have to parse JSTQL to the self hosted version
 
-        let { cleanedJS: applicableTo, prelude } = parseInternal(
+        let { cleanedJS: applicableTo, prelude } = parseInternalAplTo(
             recipe.applicableTo
         );
-        let { cleanedJS: transformTo, prelude: _ } = parseInternal(
-            recipe.transformTo
-        );
+        let transformTo = parseInternalTraTo(recipe.transformTo);
 
         return transformSelfHosted(
             { applicableTo, transformTo },
@@ -70,6 +70,7 @@ function transformSelfHosted(
     let applicableToTree = makeTree(applicabelToAST);
     let transformTo = parse_with_plugins(recipe.transformTo);
     let transformToTree = makeTree(transformTo);
+
     if (
         codeTree == undefined ||
         applicableToTree == undefined ||
@@ -78,23 +79,14 @@ function transformSelfHosted(
         throw new Error("This no worky LOL");
     }
     showTree(applicableToTree);
+    console.log(generate(codeAST));
 
     let matches = runMatch(codeTree, applicableToTree, internals);
-
     console.log(matches.length);
-    for (let match of matches.reverse()) {
-        //console.log(transformToTree.element);
-        // There is a bug here, for some reason it works sometimes when Program and sometimes when File, no clue why?????
-        let output = parse_with_plugins(recipe.transformTo).program;
-        try {
-            transformer(match, transformToTree, output, codeAST);
-        } catch (error) {
-            console.log(error);
-        }
-    }
-    console.log("Final generated code: \n");
 
-    let output = generate(codeAST, { topicToken: "%" }).code;
+    let outputAST = transformer(matches, transformToTree, codeAST, transformTo);
+
+    let output = generate(outputAST, { topicToken: "%" }).code;
     //showTree(transformToTree);
     return output;
 }

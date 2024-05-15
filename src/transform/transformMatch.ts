@@ -8,30 +8,56 @@ import {
     showTree,
     showTreePaired,
 } from "../data_structures/tree";
-import { InternalDSLVariable } from "../parser/parse";
-import { MatchedTreeNode, PairedNodes } from "../matcher/matcher";
+import { Match, MatchedTreeNode, PairedNodes } from "../matcher/matcher";
 import traverse from "@babel/traverse";
 import generate from "@babel/generator";
+import { TransformRecipe } from "./transform";
 
 export function transformer(
-    match: TreeNode<PairedNodes>,
-    trnTo: TreeNode<t.Node>,
-    output: t.Node,
-    inputCode: t.Node
-) {
-    transformMatch(match, trnTo, output);
+    matches: Match[],
+    transformTo: TreeNode<t.Node>,
+    codeAST: t.Node,
+    traToAST: t.File
+): t.Node {
+    for (let match of matches.reverse()) {
+        try {
+            let traToWithWildcards = structuredClone(traToAST);
+            for (let match_stmt of match.statements) {
+                transformMatch(match_stmt, transformTo, traToWithWildcards);
+            }
+            traverse(codeAST, {
+                enter(path) {
+                    if (
+                        !(
+                            path.node.type === "Program" ||
+                            path.node.type === "File"
+                        )
+                    ) {
+                        if (
+                            path.node === match.statements[0].element.codeNode
+                        ) {
+                            path.replaceWithMultiple(
+                                traToWithWildcards.program.body
+                            );
+                            let siblings = path.getAllNextSiblings();
 
-    if (output.type == "Program") {
-        output = output.body[0];
+                            for (
+                                let i = 0;
+                                i < match.statements.length - 1;
+                                i++
+                            ) {
+                                siblings[i].remove();
+                            }
+                        }
+                    }
+                },
+            });
+        } catch (e) {
+            console.log(e);
+        }
     }
 
-    traverse(inputCode, {
-        enter(path) {
-            if (path.node === match.element.codeNode) {
-                path.replaceWith(output);
-            }
-        },
-    });
+    return codeAST;
 }
 
 export function transformMatch(
@@ -39,23 +65,18 @@ export function transformMatch(
     trnTo: TreeNode<t.Node>,
     output: t.Node
 ) {
-    if (trnTo.element.type == "Program") {
-        return transformMatch(match, trnTo.children[0], output);
-    }
-
-    let isMatch = matchNode(match.element.aplToNode, trnTo.element);
-    if (isMatch) {
-        if (trnTo.element.type == "Identifier") {
-            traverse(output, {
-                enter(path) {
-                    if (path.isIdentifier({ name: trnTo.element.name })) {
-                        if (match.element.codeNode) {
-                            path.replaceWith(match.element.codeNode);
-                        }
-                    }
-                },
-            });
-        }
+    let isMatchingIdentifier = matchNode(
+        match.element.aplToNode,
+        trnTo.element
+    );
+    if (isMatchingIdentifier) {
+        traverse(output, {
+            Identifier: (path) => {
+                if (path.node.name === (<t.Identifier>trnTo.element).name) {
+                    path.replaceWithMultiple(match.element.codeNode);
+                }
+            },
+        });
     } else {
         for (let match_child of match.children) {
             transformMatch(match_child, trnTo, output);
@@ -70,18 +91,7 @@ function matchNode(aplTo: t.Node, trnTo: t.Node): boolean {
     //console.log(trnTo);
 
     if (trnTo.type == "Identifier" && aplTo.type == "Identifier") {
-        let aplToName = washName(aplTo.name);
-        let trnToName = trnTo.name;
-        if (aplToName == trnToName) {
-            return true;
-        }
-    } else if (trnTo.type == "Identifier" && aplTo.type == "Identifier") {
-        let aplToName = washName(aplTo.name);
-        let trnToName = trnTo.name;
-
-        if (aplToName == trnToName) {
-            return true;
-        }
+        return aplTo.name === trnTo.name;
     }
     return false;
 }

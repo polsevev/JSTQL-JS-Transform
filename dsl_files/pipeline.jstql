@@ -1,24 +1,11 @@
 proposal Pipeline{
     pair SingleArgument {
         applicable to {
-            "<<someFunctionIdent:Identifier | MemberExpression>>(<<someFunctionParam: Expression | Identifier>>);"
+            "<<someFunctionIdent:Identifier || MemberExpression>>(<<someFunctionParam: Expression>>);"
         }
 
         transform to {
             "<<someFunctionParam>> |> <<someFunctionIdent>>(%);"
-        }
-    }
-
-    pair MultiArgument {
-        applicable to {
-            "<<someFunctionIdent:Identifier>>(
-                <<firstFunctionParam : Expression | Identifier>>, 
-                <<restOfFunctionParams: anyRest>>
-                );"
-        }
-
-        transform to {
-            "<<firstFunctionParam>> |> <<someFunctionIdent>>(%, <<restOfFunctionParams>>);"
         }
     }
 }

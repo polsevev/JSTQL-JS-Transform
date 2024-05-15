@@ -8,7 +8,6 @@ import {
     transform,
 } from "./transform/transform";
 
-import { parseDSLtoAST } from "../didactic-chainsaw-dsl/src/JSTQL_interface/fetchAST";
 import { parseJSTQL } from "./langium/langiumRunner";
 const path = "test_files/test.js";
 const file = Bun.file(path);
