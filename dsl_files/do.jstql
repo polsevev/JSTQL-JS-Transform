@@ -2,7 +2,7 @@ proposal DoExpression{
     pair arrowFunction{
         applicable to {
             "let <<ident:Identifier>> = () => {
-                <<statements: NMinus1Statements >>
+                <<statements: Statement && !ReturnStatement *>>
                 return <<returnVal : Expression | Identifier>>;
             }
             "
@@ -18,7 +18,7 @@ proposal DoExpression{
     pair immediatelyInvokedUnnamedFunction {
         applicable to {
             "let <<ident:Identifier>> = function(){
-                <<statements: NMinus1Statements >>
+                <<statements: Statement && !ReturnStatement >>
                 return <<returnVal : Expression | Identifier>>;
             }();"
         }

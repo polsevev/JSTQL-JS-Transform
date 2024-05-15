@@ -1,14 +1,15 @@
-import { InternalDSLVariable, parse_with_plugins } from "./parse";
+import { Wildcard, WildcardParser, parse_with_plugins } from "./parse";
 
 import * as t from "@babel/types";
+import { WildcardTokenizer } from "./wildcardTokenizer";
 
 export function preludeBuilder(prelude: string) {
     let parsedPrelude = parse_with_plugins(prelude).program.body;
     return extractValues(parsedPrelude);
 }
 
-function extractValues(types: t.Statement[]): InternalDSLVariable {
-    let prelude: InternalDSLVariable = {};
+function extractValues(types: t.Statement[]): Wildcard[] {
+    let prelude: Wildcard[] = [];
     for (let stmt of types) {
         if (stmt.type == "VariableDeclaration") {
             stmt = <t.VariableDeclaration>stmt;
@@ -16,22 +17,15 @@ function extractValues(types: t.Statement[]): InternalDSLVariable {
             let innerDSLVariableName = (declaration.id as t.Identifier).name;
             let init = declaration.init;
             if (init) {
-                if (init.type == "ArrayExpression") {
-                    init = <t.ArrayExpression>init;
-                    let temp = [];
-                    for (let elem of init.elements) {
-                        if (elem && elem.type == "Identifier") {
-                            temp.push(elem.name);
-                        } else {
-                            throw new Error(
-                                "Usage of non variable declaration in Prelude Array"
-                            );
-                        }
-                    }
-                    prelude[innerDSLVariableName] = temp;
-                } else if (init.type === "Identifier") {
-                    init = <t.Identifier>init;
-                    prelude[innerDSLVariableName] = [init.name];
+                if (init.type == "StringLiteral") {
+                    init = <t.StringLiteral>init;
+                    prelude.push(
+                        new WildcardParser(
+                            new WildcardTokenizer(
+                                innerDSLVariableName + ":" + init
+                            ).tokenize()
+                        ).parse()
+                    );
                 } else {
                     throw new Error(
                         "Invalid usage of right side declaration in prelude"
