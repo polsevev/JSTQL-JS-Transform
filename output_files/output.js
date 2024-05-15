@@ -2,7 +2,9 @@ function parse() {
   const input = ("input" |> document.getElementById(%)).value;
   const data = 32 |> input.slice(%);
   const compressedData = data |> decode_base64(%);
-  const uncompressed = compressedData |> pako.inflate(%);
+  const uncompressed = pako.inflate(compressedData, {
+    to: "string"
+  });
   const json = uncompressed |> JSON.parse(%);
   json |> console.log(%);
   json |> convertToDesktop(%);
@@ -35,7 +37,9 @@ function convertToDesktop(json) {
     ...mappedValues,
     ...pcSpecificValues
   };
-  const compressed = newData |> JSON.stringify(%) |> pako.deflate(%);
+  const compressed = pako.deflate(newData |> JSON.stringify(%), {
+    to: "string"
+  });
   const base64 = compressed |> btoa(%);
   const finalSaveString = hash + base64;
   ("output_output" |> document.getElementById(%)).innerText = finalSaveString;
@@ -76,7 +80,7 @@ function decode_base64(s) {
       c,
       x,
       l = 0,
-      o = i |> s.substring(%);
+      o = s.substring(i, i + 72);
     for (x = 0; x < o.length; x++) {
       c = e[x |> o.charAt(%)];
       b = (b << 6) + c;

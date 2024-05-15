@@ -1,2 +1,7 @@
-let ThisTest = LOOOOOOOOL();
-let HAHHAHAH = 1 + 1;
+let a = LOOOOOOOOL();
+let b = (999 * 128) / 12;
+
+const haha = () => {
+    let a = LOOOOOOOOL();
+    let b = (999 * 128) / 12;
+};

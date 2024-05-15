@@ -1,31 +1,32 @@
 proposal DoExpression{
     pair arrowFunction{
         applicable to {
-            "() => {
-                <<blockStatements: anyStatementList | hello >>
-                return << returnExpr: Expr >>
-            }"
+            "let <<ident:Identifier>> = () => {
+                <<statements: NMinus1Statements >>
+                return <<returnVal : Expression | Identifier>>;
+            }
+            "
         }
         transform to {
-            "do {
-                << blockStatements >>
-                << returnExpr >>
+            "let <<ident>> = do {
+                <<statements>>
+                <<returnVal>>
             }"
         }
     }
 
     pair immediatelyInvokedUnnamedFunction {
         applicable to {
-            "function(){
-                <<blockStatements: anyNStatements>>
-                return << returnExpr: Expr >>
+            "let <<ident:Identifier>> = function(){
+                <<statements: NMinus1Statements >>
+                return <<returnVal : Expression | Identifier>>;
             }();"
         }
 
         transform to {
-            "do {
-                << blockStatements >>
-                << returnExpr >>
+            "let <<ident>> = do {
+                <<statements>>
+                <<returnVal>>
             }"
         }
     }

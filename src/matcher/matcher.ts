@@ -2,10 +2,11 @@ import * as t from "@babel/types";
 
 import * as babelparser from "@babel/parser";
 import { TreeNode, makeTree, showTree } from "../data_structures/tree";
-import { InternalDSLVariable } from "../parser/parse";
+import { Wildcard } from "../parser/parse";
+import generate from "@babel/generator";
+import { WildcardEvalVisitor } from "./wildcardEvaluator";
 
 const keys_to_ignore = ["loc", "start", "end", "type"];
-
 export interface MatchedTreeNode {
     aplToNode: TreeNode<t.Node>;
     codeNode: TreeNode<t.Node>;
@@ -16,11 +17,21 @@ export interface PairedNodes {
     codeNode: t.Node;
 }
 
+export interface Match {
+    statements: TreeNode<PairedNodes>[];
+}
+
+enum MatchCurrentResult {
+    MatchedWithWildcard,
+    Matched,
+    NoMatch,
+}
+
 export function runMatch(
     code: TreeNode<t.Node>,
     applicableTo: TreeNode<t.Node>,
-    internals: InternalDSLVariable
-): TreeNode<PairedNodes>[] {
+    internals: Wildcard[]
+): Match[] {
     // Special case for a single expression, we have to remove "ExpressionStatement" node.
     if (applicableTo.children.length === 1) {
         if (applicableTo.children[0].element.type === "ExpressionStatement") {
@@ -42,20 +53,18 @@ export function runMatch(
             return matcher.matches;
         }
     } else {
-        showTree(code);
-        showTree(applicableTo);
-
         let matcher = new Matcher(internals, applicableTo.element);
         matcher.multiStatementMatcher(code, applicableTo);
+
         return matcher.matches;
     }
 }
 
 export class Matcher {
-    public matches: TreeNode<PairedNodes>[];
-    private internals: InternalDSLVariable;
+    public matches: Match[];
+    private internals: Wildcard[];
     private aplToFull: t.Node;
-    constructor(internals: InternalDSLVariable, aplToFull: t.Node) {
+    constructor(internals: Wildcard[], aplToFull: t.Node) {
         this.matches = [];
         this.internals = internals;
         this.aplToFull = aplToFull;
@@ -77,27 +86,37 @@ export class Matcher {
                 }
             }
             // Store all full matches
-            this.matches.push(...temp);
+            this.matches.push(
+                ...temp.map((x) => {
+                    return {
+                        statements: [x],
+                    };
+                })
+            );
         }
         // Check if the current matches
 
         let curMatches = this.checkCodeNode(code.element, aplTo.element);
-        curMatches =
-            curMatches && code.children.length >= aplTo.children.length;
-        if (!curMatches) {
-            return;
-        }
-        // At this point current does match
-        // Perform a search on each of the children of both AplTo and Code.
         let pairedCurrent: TreeNode<PairedNodes> = new TreeNode(null, {
             codeNode: code.element,
             aplToNode: aplTo.element,
         });
+        if (curMatches === MatchCurrentResult.NoMatch) {
+            return;
+        } else if (curMatches === MatchCurrentResult.MatchedWithWildcard) {
+            return pairedCurrent;
+        } else if (code.children.length !== aplTo.children.length) {
+            return;
+        }
+        // At this point current does match
+        // Perform a search on each of the children of both AplTo and Code.
+
         for (let i = 0; i < aplTo.children.length; i++) {
             let childSearch = this.singleExprMatcher(
                 code.children[i],
                 aplTo.children[i]
             );
+
             if (childSearch === undefined) {
                 // Failed to get a full match, so early return here
                 return;
@@ -108,6 +127,43 @@ export class Matcher {
 
         // If we are here, a full match has been found
         return pairedCurrent;
+    }
+
+    private checkCodeNode(
+        codeNode: t.Node,
+        aplToNode: t.Node
+    ): MatchCurrentResult {
+        // First verify the internal DSL variables
+
+        if (aplToNode.type === "Identifier") {
+            for (let wildcard of this.internals) {
+                if (WildcardEvalVisitor.visit(wildcard.expr, codeNode)) {
+                    return MatchCurrentResult.MatchedWithWildcard;
+                }
+            }
+        }
+
+        if (codeNode.type != aplToNode.type) {
+            return MatchCurrentResult.NoMatch;
+        }
+
+        //If not an internal DSL variable, gotta verify that the identifier is the same
+        if (codeNode.type === "Identifier" && aplToNode.type === "Identifier") {
+            if (codeNode.name != aplToNode.name) {
+                return MatchCurrentResult.NoMatch;
+            }
+        }
+        for (let key of Object.keys(aplToNode)) {
+            if (key in keys_to_ignore) {
+                continue;
+            }
+
+            if (!Object.keys(codeNode).includes(key)) {
+                return MatchCurrentResult.NoMatch;
+            }
+        }
+
+        return MatchCurrentResult.Matched;
     }
 
     multiStatementMatcher(code: TreeNode<t.Node>, aplTo: TreeNode<t.Node>) {
@@ -127,17 +183,18 @@ export class Matcher {
         // Sliding window the size of aplTo
         for (let y = 0; y <= code.length - aplTo.length; y++) {
             let fullMatch = true;
-            let collection: TreeNode<PairedNodes>[] = [];
+            let statements: TreeNode<PairedNodes>[] = [];
             for (let i = 0; i < aplTo.length; i++) {
                 let res = this.exactExprMatcher(code[i + y], aplTo[i]);
                 if (!res) {
                     fullMatch = false;
                     break;
                 }
-                collection.push(res);
+                statements.push(res);
             }
             if (fullMatch) {
-                this.matches.push(...collection);
+                console.log(statements.length);
+                this.matches.push({ statements });
             }
         }
     }
@@ -173,43 +230,5 @@ export class Matcher {
         }
 
         return paired;
-    }
-
-    private checkCodeNode(code_node: t.Node, aplTo: t.Node): boolean {
-        // First verify the internal DSL variables
-
-        if (aplTo.type === "Identifier") {
-            if (aplTo.name in this.internals) {
-                if (this.internals[aplTo.name].includes(code_node.type)) {
-                    return true;
-                }
-
-                if (this.internals[aplTo.name].includes("Expression")) {
-                    return t.isExpression(code_node);
-                }
-            }
-        }
-
-        if (code_node.type != aplTo.type) {
-            return false;
-        }
-
-        //If not an internal DSL variable, gotta verify that the identifier is the same
-        if (code_node.type === "Identifier" && aplTo.type === "Identifier") {
-            if (code_node.name != aplTo.name) {
-                return false;
-            }
-        }
-        for (let key of Object.keys(aplTo)) {
-            if (key in keys_to_ignore) {
-                continue;
-            }
-
-            if (!Object.keys(code_node).includes(key)) {
-                return false;
-            }
-        }
-
-        return true;
     }
 }
