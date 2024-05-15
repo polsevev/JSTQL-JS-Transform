@@ -118,7 +118,7 @@ export interface GroupExpr extends WildcardNode {
     expr: TypeExpr;
 }
 
-class WildcardParser {
+export class WildcardParser {
     private position = -1;
 
     constructor(private tokens: WildcardToken[]) {}
