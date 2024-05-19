@@ -8,6 +8,7 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-pipeline-operator": "^7.23.3",
+    "@babel/plugin-syntax-top-level-await": "^7.14.5",
     "@swc/cli": "^0.1.62",
     "@types/babel__generator": "^7.6.8",
     "@types/node": "^20.5.9",

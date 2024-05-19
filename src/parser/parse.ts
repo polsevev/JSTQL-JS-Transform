@@ -275,7 +275,15 @@ export function parse_with_plugins(
     code: string
 ): babelparser.ParseResult<t.File> {
     return babelparser.parse(code, {
-        plugins: [["pipelineOperator", { proposal: "hack", topicToken: "%" }]],
+        plugins: [
+            ["pipelineOperator", { proposal: "hack", topicToken: "%" }],
+            "doExpressions",
+            "topLevelAwait",
+        ],
+        allowAwaitOutsideFunction: true,
+        allowReturnOutsideFunction: true,
+        allowUndeclaredExports: true,
+        sourceType: "unambiguous",
     });
 }
 

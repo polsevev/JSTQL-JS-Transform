@@ -1,9 +1,9 @@
 proposal DoExpression{
-    pair arrowFunction{
+    case arrowFunction{
         applicable to {
             "let <<ident:Identifier>> = () => {
-                <<statements: Statement && !ReturnStatement *>>
-                return <<returnVal : Expression | Identifier>>;
+                <<statements: (Statement && !ReturnStatement)*>>
+                return <<returnVal : Expression>>;
             }
             "
         }
@@ -15,11 +15,11 @@ proposal DoExpression{
         }
     }
 
-    pair immediatelyInvokedUnnamedFunction {
+    case immediatelyInvokedUnnamedFunction {
         applicable to {
             "let <<ident:Identifier>> = function(){
-                <<statements: Statement && !ReturnStatement >>
-                return <<returnVal : Expression | Identifier>>;
+                <<statements: (Statement && !ReturnStatement)*>>
+                return <<returnVal : Expression>>;
             }();"
         }
 

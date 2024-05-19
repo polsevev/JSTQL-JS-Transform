@@ -9,22 +9,23 @@ import {
 } from "./transform/transform";
 
 import { parseJSTQL } from "./langium/langiumRunner";
-const path = "test_files/test.js";
+
+const dir = "../prettier/src";
+
+const path = "../prettier/src/index.js";
 const file = Bun.file(path);
 const codeFromFile = await file.text();
 const main = async () => {
     //transform(selfHostedTransformExampleMultiStmt, codeFromFile);
-
+    console.log(codeFromFile);
     const jstql_file =
         "/home/rolfmg/Coding/Master/didactic-chainsaw/dsl_files/pipeline.jstql";
     const test_file = Bun.file(jstql_file);
     const test_JSTQL = await test_file.text();
     let proposals = await parseJSTQL(test_JSTQL);
 
-    await Bun.write(
-        "output_files/output.js",
-        transform(proposals[0].pairs[0], codeFromFile)
-    );
+    let code = transform(proposals[0].cases, codeFromFile);
+    await Bun.write("output_files/testingLOL.js", code);
 };
 
 main();
