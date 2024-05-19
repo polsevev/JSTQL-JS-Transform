@@ -5,11 +5,11 @@ entry Model:
 
 Proposal:
     'proposal' name=ID "{"
-        (pair+=Pair)+
+        (case+=Case)+
     "}";
 
-Pair:
-    "pair" name=ID "{"
+Case:
+    "case" name=ID "{"
         aplTo=ApplicableTo
         traTo=TraTo
     "}";

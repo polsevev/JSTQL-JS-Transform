@@ -1,39 +1,44 @@
 import { expect, test } from "bun:test";
 import { TransformRecipe, transform } from "../transform/transform";
+import { parseJSTQL } from "../langium/langiumRunner";
 
-const transformExample: TransformRecipe = {
-    applicableTo: `<<a>>(<<b:Identifier|Expression>>);`,
-    transformTo: "<<b>> |> <<a>>(%)",
-};
-const code =
-    "a(something);a(1+1);something(some_other_thing + 1 + 10 + 100); console.log(a)";
+async function runTest(inputJS: string, inputJSTQL: string): Promise<string> {
+    //transform(selfHostedTransformExampleMultiStmt, codeFromFile);
+    const file = Bun.file(inputJS);
+    const codeFromFile = await file.text();
 
-test("Test code: " + code + " on " + transformExample.applicableTo, () => {
-    expect(transform(transformExample, code).length).toBe(
-        "something |> a(%);1 + 1 |> a(%);some_other_thing + 1 + 10 + 100 |> something(%);console.log(a);"
-    );
+    const test_file = Bun.file(inputJSTQL);
+    const test_JSTQL = await test_file.text();
+    let proposals = await parseJSTQL(test_JSTQL);
+
+    let code = transform(proposals[0].cases, codeFromFile);
+    return code;
+}
+let pipelineRes = await runTest(
+    "test_files/pipeline_test.js",
+    "dsl_files/pipeline.jstql"
+);
+let pipelineResFile = await Bun.file(
+    "src/test/test_outputs/pipeline_output.js"
+).text();
+test("Test code: pipeline", () => {
+    expect(pipelineRes).toBe(pipelineResFile);
 });
-// Expected outcome: 3 correct matches
-const secondTransformExample: TransformRecipe = {
-    applicableTo: `<<a>>.<<b>>(<<c:Expression|Identifier>>);`,
-    transformTo: "c |> a.b(%);",
-};
-const code2 = `console.log(a);something.sometingOther(b(c));some.thing(1+1); a(b)`;
-test(
-    "Test code: " + code2 + " on " + secondTransformExample.applicableTo,
-    () => {
-        expect(transform(secondTransformExample, code2).length).toBe(3);
-    }
+let doRes = await runTest("test_files/do_test.js", "dsl_files/do.jstql");
+
+let doResFile = await Bun.file("src/test/test_outputs/do_output.js").text();
+test("Test code: do", () => {
+    expect(doRes).toBe(doResFile);
+});
+
+let awaitToPromise = await runTest(
+    "test_files/do_test.js",
+    "dsl_files/do.jstql"
 );
-// Expected outcome: 1 correct match
-const thirdTransformExample: TransformRecipe = {
-    applicableTo: `myFunction(<<a:Expression|Identifier>>)`,
-    transformTo: `a |> myFunction(%)`,
-};
-const code3 = `myFunction(a);otherFunction(a); myFunction.otherfunction(a)`;
-test(
-    "Test code: " + code3 + " on " + thirdTransformExample.applicableTo,
-    () => {
-        expect(transform(thirdTransformExample, code3)).toBe(``);
-    }
-);
+
+let awaitToPromiseOutput = await Bun.file(
+    "src/test/test_outputs/do_output.js"
+).text();
+test("Test code: do", () => {
+    expect(awaitToPromise).toBe(awaitToPromiseOutput);
+});

@@ -1,5 +1,5 @@
 import type { ValidationAcceptor, ValidationChecks } from "langium";
-import type { JstqlAstType, Pair } from "./generated/ast.js";
+import type { JstqlAstType, Case } from "./generated/ast.js";
 import type { JstqlServices } from "./jstql-module.js";
 
 /**
@@ -9,7 +9,7 @@ export function registerValidationChecks(services: JstqlServices) {
     const registry = services.validation.ValidationRegistry;
     const validator = services.validation.JstqlValidator;
     const checks: ValidationChecks<JstqlAstType> = {
-        Pair: validator.validateWildcards,
+        Case: validator.validateWildcards,
     };
     registry.register(checks, validator);
 }
@@ -18,7 +18,7 @@ export function registerValidationChecks(services: JstqlServices) {
  * Implementation of custom validations.
  */
 export class JstqlValidator {
-    validateWildcards(pair: Pair, accept: ValidationAcceptor): void {
+    validateWildcards(pair: Case, accept: ValidationAcceptor): void {
         try {
             let validationResultAplTo = validateWildcardAplTo(
                 collectWildcard(pair.aplTo.apl_to_code.split(""))

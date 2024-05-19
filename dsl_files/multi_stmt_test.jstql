@@ -1,5 +1,5 @@
 proposal MultiStmt{
-    pair Smthn{
+    case Smthn{
         applicable to{
             "let <<ident1:Identifier>> = <<funcIdent:Identifier | MemberExpression>>();
             let <<ident2:Identifier>> = <<expr:Expression>>;
