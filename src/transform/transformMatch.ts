@@ -34,19 +34,45 @@ export function transformer(
                         )
                     ) {
                         if (
-                            path.node === match.statements[0].element.codeNode
+                            path.node ===
+                            match.statements[0].element.codeNode[0]
                         ) {
                             path.replaceWithMultiple(
                                 traToWithWildcards.program.body
                             );
                             let siblings = path.getAllNextSiblings();
 
+                            // For multi line applicable to
                             for (
                                 let i = 0;
                                 i < match.statements.length - 1;
                                 i++
                             ) {
                                 siblings[i].remove();
+                            }
+
+                            // For when we have matched with *
+
+                            for (let matchStmt of match.statements) {
+                                for (let [
+                                    i,
+                                    stmtMatchedWithStar,
+                                ] of matchStmt.element.codeNode.entries()) {
+                                    let siblingnodes = siblings.map(
+                                        (a) => a.node
+                                    );
+                                    if (
+                                        siblingnodes.includes(
+                                            stmtMatchedWithStar
+                                        )
+                                    ) {
+                                        let index =
+                                            siblingnodes.indexOf(
+                                                stmtMatchedWithStar
+                                            );
+                                        siblings[index].remove();
+                                    }
+                                }
                             }
                         }
                     }
@@ -76,6 +102,19 @@ export function transformMatch(
                     path.replaceWithMultiple(match.element.codeNode);
                 }
             },
+            ExpressionStatement: (path) => {
+                if (trnTo.element.type === "ExpressionStatement") {
+                    if (
+                        path.node.expression.type === "Identifier" &&
+                        trnTo.element.expression.type === "Identifier"
+                    ) {
+                        let ident = path.node.expression;
+                        if (ident.name === trnTo.element.expression.name) {
+                            path.replaceWithMultiple(match.element.codeNode);
+                        }
+                    }
+                }
+            },
         });
     } else {
         for (let match_child of match.children) {
@@ -89,6 +128,18 @@ export function transformMatch(
 
 function matchNode(aplTo: t.Node, trnTo: t.Node): boolean {
     //console.log(trnTo);
+
+    if (
+        trnTo.type === "ExpressionStatement" &&
+        aplTo.type == "ExpressionStatement"
+    ) {
+        if (
+            trnTo.expression.type === "Identifier" &&
+            aplTo.expression.type === "Identifier"
+        ) {
+            return aplTo.expression.name === trnTo.expression.name;
+        }
+    }
 
     if (trnTo.type == "Identifier" && aplTo.type == "Identifier") {
         return aplTo.name === trnTo.name;

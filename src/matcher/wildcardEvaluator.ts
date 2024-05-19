@@ -7,7 +7,9 @@ import {
     UnaryExpr,
     Wildcard,
     WildcardNode,
+    WildcardParser,
 } from "../parser/parse";
+import { WildcardTokenizer } from "../parser/wildcardTokenizer";
 
 export class WildcardEvalVisitor {
     static visit(node: WildcardNode, toComp: t.Node): boolean {
@@ -34,9 +36,26 @@ export class WildcardEvalVisitor {
                 let cur = node as Identifier;
                 if (cur.name === "Expression") {
                     return t.isExpression(toComp);
+                } else if (cur.name === "Statement") {
+                    return t.isStatement(toComp);
                 }
                 return cur.name === toComp.type;
             }
         }
     }
+}
+
+function testWildcardEval() {
+    console.log(
+        WildcardEvalVisitor.visit(
+            new WildcardParser(
+                new WildcardTokenizer(
+                    "statements:(Statement && !ReturnStatement)*"
+                ).tokenize()
+            ).parse().expr,
+            t.variableDeclaration("let", [
+                t.variableDeclarator(t.identifier("Id"), null),
+            ])
+        )
+    );
 }

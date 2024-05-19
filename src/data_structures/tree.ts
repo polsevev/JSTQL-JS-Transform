@@ -57,7 +57,7 @@ export const showTreePaired = (
     console.log(
         "   ".repeat(idents),
         tree.element.aplToNode.type,
-        tree.element.codeNode.type
+        tree.element.codeNode.map((x) => x.type)
     );
     tree.children.forEach((child) => {
         showTreePaired(child, idents + 1);
