@@ -32,13 +32,13 @@ test("Test code: do", () => {
 });
 
 let awaitToPromise = await runTest(
-    "test_files/do_test.js",
-    "dsl_files/do.jstql"
+    "test_files/awaitToPromise.js",
+    "dsl_files/awaitToPromise.jstql"
 );
 
 let awaitToPromiseOutput = await Bun.file(
-    "src/test/test_outputs/do_output.js"
+    "src/test/test_outputs/awaitToPromise_output.js"
 ).text();
-test("Test code: do", () => {
+test("Test code: await to promise", () => {
     expect(awaitToPromise).toBe(awaitToPromiseOutput);
 });
