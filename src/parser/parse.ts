@@ -59,7 +59,7 @@ export function parseInternalAplTo(code: string): InternalParseResult {
             let wildcard = new WildcardParser(
                 new WildcardTokenizer(temp).tokenize()
             ).parse();
-
+            //wildcard.identifier.name = "_" + wildcard.identifier.name + "_";
             cleanedJS += wildcard.identifier.name;
 
             prelude.push(wildcard);
@@ -74,9 +74,9 @@ export function parseInternalAplTo(code: string): InternalParseResult {
             cleanedJS += code[i];
         }
     }
+    console.log(prelude, cleanedJS);
     return { prelude, cleanedJS };
 }
-
 export interface Identifier extends WildcardNode {
     nodeType: "Identifier";
     name: string;
@@ -154,7 +154,7 @@ export class WildcardParser {
         let identifier = this.Identifier();
         this.Semicolon();
         let multidenoted = this.TypeExpr();
-        let star = this.Star();
+        let star = this.Pluss();
         return {
             nodeType: "Wildcard",
             identifier,
@@ -163,8 +163,8 @@ export class WildcardParser {
         };
     }
 
-    private Star(): boolean {
-        if (this.peek() && this.peek().tokenKind === "Star") {
+    private Pluss(): boolean {
+        if (this.peek() && this.peek().tokenKind === "Pluss") {
             this.advance();
             return true;
         } else {

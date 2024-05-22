@@ -4,6 +4,6 @@ async function something() {
   return fetch("https://uib.no").then(uib => {
     a += 100000;
     a -= 1000;
-    [a, uib];
+    return [a, uib];
   });
 }

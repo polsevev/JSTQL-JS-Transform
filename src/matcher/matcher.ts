@@ -200,17 +200,10 @@ export class Matcher {
                 return MatchResult.NoMatch;
             }
         }
-        for (let key of Object.keys(aplToNode)) {
-            if (key in keys_to_ignore) {
-                continue;
-            }
 
-            if (!Object.keys(codeNode).includes(key)) {
-                return MatchResult.NoMatch;
-            }
-        }
-
-        return MatchResult.Matched;
+        return codeNode.type === aplToNode.type
+            ? MatchResult.Matched
+            : MatchResult.NoMatch;
     }
 
     multiStatementMatcher(code: TreeNode<t.Node>, aplTo: TreeNode<t.Node>) {

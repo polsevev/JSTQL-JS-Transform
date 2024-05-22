@@ -3,15 +3,19 @@ Wildcard:
     Identifier ":" TypeExpr ("*"?)
 TypeExpr:
     BinaryExpr
+    | UnaryExpr 
+   | PrimitiveExpr 
 
 BinaryExpr: 
-    UnaryExpr { Operator PrimitiveExpr }*
+    TypeExpr { Operator TypeExpr }*
 
 UnaryExpr:
-    {UnaryOperator}? PrimitiveExpr
+    {UnaryOperator}? TypeExpr
 
 PrimitiveExpr:
     GroupExpr | Identifier
 
 GroupExpr:
     "(" TypeExpr ")"
+
+
