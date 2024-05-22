@@ -2,7 +2,7 @@ proposal awaitToPomise{
     case single{
         applicable to {
             "let <<ident:Identifier>> = await <<awaitedExpr: Expression>>;
-            <<statements: (Statement && !ReturnStatement)*>>
+            <<statements: (Statement && !ReturnStatement)+>>
             return <<returnExpr: Expression>>
             "
         }
@@ -10,7 +10,7 @@ proposal awaitToPomise{
         transform to{
             "return <<awaitedExpr>>.then((<<ident>>) => {
                 <<statements>>
-                <<returnExpr>>
+                return <<returnExpr>>
             });"
         }
     }

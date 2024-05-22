@@ -4,7 +4,7 @@ type TokenKind =
     | "Identifier"
     | "OpeningParenthesis"
     | "ClosingParenthesis"
-    | "Star"
+    | "Pluss"
     | "Semicolon";
 
 export interface WildcardToken {
@@ -79,8 +79,8 @@ export class WildcardTokenizer {
                 }
                 break;
             }
-            case "*": {
-                this.consumeToken("Star", char);
+            case "+": {
+                this.consumeToken("Pluss", char);
                 break;
             }
             case ":": {
