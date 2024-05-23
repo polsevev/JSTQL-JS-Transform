@@ -74,7 +74,6 @@ export function parseInternalAplTo(code: string): InternalParseResult {
             cleanedJS += code[i];
         }
     }
-    console.log(prelude, cleanedJS);
     return { prelude, cleanedJS };
 }
 export interface Identifier extends WildcardNode {

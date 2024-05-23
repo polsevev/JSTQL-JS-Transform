@@ -28,13 +28,16 @@ export interface TransformRecipe {
 export interface SelfHostedRecipe extends TransformRecipe {
     prelude: string;
 }
-export function transform(recipes: TransformRecipe[], code: string): string {
+export function transform(
+    recipes: TransformRecipe[],
+    code: string
+): [string, number] {
     let codeAST: t.Node = parse_with_plugins(code);
-
+    let amount = 0;
     for (let recipe of recipes) {
         if ((<SelfHostedRecipe>recipe).prelude !== undefined) {
             // We are using the self hosted version
-            codeAST = transformSelfHosted(
+            let temp = transformSelfHosted(
                 {
                     applicableTo: recipe.applicableTo,
                     transformTo: recipe.transformTo,
@@ -42,6 +45,8 @@ export function transform(recipes: TransformRecipe[], code: string): string {
                 preludeBuilder((recipe as SelfHostedRecipe).prelude),
                 codeAST
             );
+            codeAST = temp[0];
+            amount += temp[1];
         } else {
             // We are using JSTQL
             // We have to parse JSTQL to the self hosted version
@@ -51,24 +56,26 @@ export function transform(recipes: TransformRecipe[], code: string): string {
             );
             let transformTo = parseInternalTraTo(recipe.transformTo);
 
-            codeAST = transformSelfHosted(
+            let temp = transformSelfHosted(
                 { applicableTo, transformTo },
                 prelude,
                 codeAST
             );
+            codeAST = temp[0];
+            amount += temp[1];
         }
     }
 
     let output = generate(codeAST, { topicToken: "%" }).code;
     //showTree(transformToTree);
-    return output;
+    return [output, amount];
 }
 
 function transformSelfHosted(
     recipe: TransformRecipe,
     internals: Wildcard[],
     codeAST: t.Node
-): t.Node {
+): [t.Node, number] {
     let codeTree = makeTree(codeAST as babelparser.ParseResult<t.File>);
     let applicabelToAST = parse_with_plugins(recipe.applicableTo);
 
@@ -83,9 +90,18 @@ function transformSelfHosted(
     ) {
         throw new Error("This no worky LOL");
     }
-
     let matches = runMatch(codeTree, applicableToTree, internals);
+
     console.log("We found", matches.length, "matches");
-    let outputAST = transformer(matches, transformToTree, codeAST, transformTo);
-    return outputAST;
+
+    let outputAST = transformer(
+        matches,
+        transformToTree,
+        codeAST,
+        transformTo,
+        internals.map((x) => x.identifier.name)
+    );
+
+    console.log("Finished transforming");
+    return [outputAST, matches.length];
 }
