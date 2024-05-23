@@ -22,13 +22,13 @@ let pipelineResFile = await Bun.file(
     "src/test/test_outputs/pipeline_output.js"
 ).text();
 test("Test code: pipeline", () => {
-    expect(pipelineRes).toBe(pipelineResFile);
+    expect(pipelineRes).toEqual([pipelineResFile, 29]);
 });
 let doRes = await runTest("test_files/do_test.js", "dsl_files/do.jstql");
 
 let doResFile = await Bun.file("src/test/test_outputs/do_output.js").text();
 test("Test code: do", () => {
-    expect(doRes).toBe(doResFile);
+    expect(doRes).toEqual([doResFile, 2]);
 });
 
 let awaitToPromise = await runTest(
@@ -40,5 +40,5 @@ let awaitToPromiseOutput = await Bun.file(
     "src/test/test_outputs/awaitToPromise_output.js"
 ).text();
 test("Test code: await to promise", () => {
-    expect(awaitToPromise).toBe(awaitToPromiseOutput);
+    expect(awaitToPromise).toEqual([awaitToPromiseOutput, 1]);
 });
