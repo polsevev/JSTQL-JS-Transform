@@ -1,1 +1,0 @@
-module.exports = './dist/backend' |> require(%);
