@@ -1,7 +1,2 @@
-async function lol() {
-    let a = 0;
-    let b = await gc();
-    let c = 100;
-    let d = await l();
-    return 1;
-}
+a(a(a(a(a(a(a(b)))))));
+c(c(c(c(c(d, b), b), b), b), b);

@@ -75,7 +75,7 @@ function validateWildcardAplTo(wildcards: string[]): ValidationResultAplTo {
         }
 
         if (!types) {
-            errors.push("No types given for value");
+            errors.push("No types given for wildcard " + identifier);
         }
     }
     return { env, errors };

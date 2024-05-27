@@ -94,13 +94,7 @@ function transformSelfHosted(
 
     console.log("We found", matches.length, "matches");
 
-    let outputAST = transformer(
-        matches,
-        transformToTree,
-        codeAST,
-        transformTo,
-        internals.map((x) => x.identifier.name)
-    );
+    let outputAST = transformer(matches, transformToTree, codeAST, transformTo);
 
     console.log("Finished transforming");
     return [outputAST, matches.length];
