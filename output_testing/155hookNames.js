@@ -1,1 +1,0 @@
-module.exports = './dist/hookNames' |> require(%);
