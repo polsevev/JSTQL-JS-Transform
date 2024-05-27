@@ -1,33 +1,33 @@
 proposal DoExpression{
     case arrowFunction{
         applicable to {
-            "let <<ident:Identifier>> = () => {
+            "() => {
                 <<statements: (Statement && !ReturnStatement)+>>
                 return <<returnVal : Expression>>;
             }
             "
         }
         transform to {
-            "let <<ident>> = do {
+            "(do {
                 <<statements>>
                 <<returnVal>>
-            }"
+            })"
         }
     }
 
     case immediatelyInvokedUnnamedFunction {
         applicable to {
-            "let <<ident:Identifier>> = function(){
+            "(function(){
                 <<statements: (Statement && !ReturnStatement)+>>
                 return <<returnVal : Expression>>;
-            }();"
+            })();"
         }
 
         transform to {
-            "let <<ident>> = do {
+            "(do {
                 <<statements>>
                 <<returnVal>>
-            }"
+            })"
         }
     }
 }
