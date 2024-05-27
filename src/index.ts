@@ -12,60 +12,89 @@ import { parseJSTQL } from "./langium/langiumRunner";
 
 const dir = "../prettier/src";
 
-const path = "test_files/pipeline_test.js";
+const path = "test_files/do_test.js";
 const file = Bun.file(path);
 const codeFromFile = await file.text();
 const main = async () => {
     //transform(selfHostedTransformExampleMultiStmt, codeFromFile);
+
     /*
     console.log(codeFromFile);
     const jstql_file =
-        "/home/rolfmg/Coding/Master/didactic-chainsaw/dsl_files/pipeline.jstql";
+        "/home/rolfmg/Coding/Master/didactic-chainsaw/dsl_files/do.jstql";
     const test_file = Bun.file(jstql_file);
     const test_JSTQL = await test_file.text();
     let proposals = await parseJSTQL(test_JSTQL);
 
     let [code, count] = transform(proposals[0].cases, codeFromFile);
-    await Bun.write("output_files/pipeline_out.js", code);
+    await Bun.write("output_files/output_do.js", code);
     return;
     */
-    const jstql_file =
-        "/home/rolfmg/Coding/Master/didactic-chainsaw/dsl_files/pipeline.jstql";
-    const test_file = Bun.file(jstql_file);
-    const test_JSTQL = await test_file.text();
-    let proposals = await parseJSTQL(test_JSTQL);
-
-    let basepathExamplesJSFiles = "../next.js";
+    let basepathExamplesJSFiles = "../react";
     let examples = (await readdir(basepathExamplesJSFiles, { recursive: true }))
         .filter((x) => x.endsWith(".js"))
         .map((x) => basepathExamplesJSFiles + "/" + x);
     console.log(examples);
+    let result = [];
+    for (let proposalFile of [
+        "pipeline.jstql",
+        "do.jstql",
+        "awaitToPromise.jstql",
+    ]) {
+        const jstql_file = "dsl_files/" + proposalFile;
+        const test_file = Bun.file(jstql_file);
+        const test_JSTQL = await test_file.text();
+        let proposals = await parseJSTQL(test_JSTQL);
 
-    let sum = 0;
-    console.log("Scripts found ", sum, "matches!");
-    let count = 0;
-    for (let examplesFile of examples) {
-        try {
-            if (examplesFile.split("/").includes("compiled")) {
-                continue;
-            }
-            console.log(examplesFile);
-            let script = await Bun.file(examplesFile).text();
-            let [resultString, matches] = transform(proposals[0].cases, script);
-            sum += matches;
-            if (matches > 0) {
-                await Bun.write(
-                    "output_testing/" + count + examplesFile.split("/").at(-1),
-                    resultString
+        let sum = 0;
+        let failures = 0;
+        let filesSucceeded = 0;
+        console.log("Scripts found ", sum, "matches!");
+        let count = 0;
+        for (let examplesFile of examples) {
+            try {
+                if (examplesFile.split("/").includes("compiled")) {
+                    continue;
+                }
+                console.log(examplesFile);
+                let script = await Bun.file(examplesFile).text();
+                let [resultString, matches] = transform(
+                    proposals[0].cases,
+                    script
                 );
-                count += 1;
+                sum += matches;
+                if (matches > 0) {
+                    //await Bun.write(
+                    //  "output_testing/" + count + examplesFile.split("/").at(-1),
+                    //resultString
+                    //);
+                    count += 1;
+                }
+                filesSucceeded += 1;
+            } catch (e) {
+                failures += 1;
             }
-        } catch (e) {
-            console.log("Failed");
+            console.log("current sum", sum);
         }
-        console.log("current sum", sum);
+        result.push(
+            "Total for " +
+                proposalFile +
+                " is " +
+                sum +
+                ",failures " +
+                failures +
+                ",succeeded " +
+                filesSucceeded +
+                ", Files With Matches " +
+                count +
+                ",totalJSFiles " +
+                examples.length
+        );
     }
-    console.log(sum);
+
+    for (let res of result) {
+        console.log(res);
+    }
 };
 
 main();
