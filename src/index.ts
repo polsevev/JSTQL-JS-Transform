@@ -40,7 +40,7 @@ const main = async () => {
         "pipeline.jstql",
         "do.jstql",
         "awaitToPromise.jstql",
-    ]) {
+    ].slice(1, 2)) {
         const jstql_file = "dsl_files/" + proposalFile;
         const test_file = Bun.file(jstql_file);
         const test_JSTQL = await test_file.text();
