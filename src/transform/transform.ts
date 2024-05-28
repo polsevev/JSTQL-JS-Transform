@@ -91,11 +91,11 @@ function transformSelfHosted(
         throw new Error("This no worky LOL");
     }
     let matches = runMatch(codeTree, applicableToTree, internals);
-
-    console.log("We found", matches.length, "matches");
+    //showTreePaired(matches[0].statements[0]);
+    //console.log("We found", matches.length, "matches");
 
     let outputAST = transformer(matches, transformToTree, codeAST, transformTo);
 
-    console.log("Finished transforming");
+    //console.log("Finished transforming");
     return [outputAST, matches.length];
 }

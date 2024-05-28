@@ -12,7 +12,7 @@ import { parseJSTQL } from "./langium/langiumRunner";
 
 const dir = "../prettier/src";
 
-const path = "test_files/do_test.js";
+const path = "test_files/test2.js";
 const file = Bun.file(path);
 const codeFromFile = await file.text();
 const main = async () => {
@@ -21,16 +21,16 @@ const main = async () => {
     /*
     console.log(codeFromFile);
     const jstql_file =
-        "/home/rolfmg/Coding/Master/didactic-chainsaw/dsl_files/do.jstql";
+        "/home/rolfmg/Coding/Master/didactic-chainsaw/dsl_files/awaitToPromise.jstql";
     const test_file = Bun.file(jstql_file);
     const test_JSTQL = await test_file.text();
     let proposals = await parseJSTQL(test_JSTQL);
 
     let [code, count] = transform(proposals[0].cases, codeFromFile);
-    await Bun.write("output_files/output_do.js", code);
+    await Bun.write("output_files/test2.js", code);
     return;
     */
-    let basepathExamplesJSFiles = "../react";
+    let basepathExamplesJSFiles = "../next.js";
     let examples = (await readdir(basepathExamplesJSFiles, { recursive: true }))
         .filter((x) => x.endsWith(".js"))
         .map((x) => basepathExamplesJSFiles + "/" + x);
@@ -54,7 +54,7 @@ const main = async () => {
         for (let examplesFile of examples) {
             try {
                 if (examplesFile.split("/").includes("compiled")) {
-                    continue;
+                    //continue;
                 }
                 console.log(examplesFile);
                 let script = await Bun.file(examplesFile).text();
@@ -63,32 +63,25 @@ const main = async () => {
                     script
                 );
                 sum += matches;
+                console.log(matches);
                 if (matches > 0) {
-                    //await Bun.write(
-                    //  "output_testing/" + count + examplesFile.split("/").at(-1),
-                    //resultString
-                    //);
+                    await Bun.write(
+                        "output_testing/" +
+                            count +
+                            examplesFile.split("/").join("_"),
+                        resultString
+                    );
                     count += 1;
                 }
                 filesSucceeded += 1;
             } catch (e) {
                 failures += 1;
+                //console.log(e);
             }
             console.log("current sum", sum);
         }
         result.push(
-            "Total for " +
-                proposalFile +
-                " is " +
-                sum +
-                ",failures " +
-                failures +
-                ",succeeded " +
-                filesSucceeded +
-                ", Files With Matches " +
-                count +
-                ",totalJSFiles " +
-                examples.length
+            proposalFile + ", " + sum + ", " + count + ", " + filesSucceeded
         );
     }
 
