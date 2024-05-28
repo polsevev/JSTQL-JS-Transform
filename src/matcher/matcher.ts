@@ -226,7 +226,7 @@ export class Matcher {
             let statements: TreeNode<PairedNodes>[] = [];
             let aplToi = 0;
             let codei = 0;
-            while (aplToi < aplTo.length) {
+            while (aplToi < aplTo.length && codei + y < code.length) {
                 let [paired, matchResult] = this.exactExprMatcher(
                     code[codei + y],
                     aplTo[aplToi]
@@ -259,6 +259,9 @@ export class Matcher {
                 statements.push(paired);
                 aplToi += 1;
                 codei += 1;
+            }
+            if (aplToi !== aplTo.length) {
+                fullMatch = false;
             }
             if (fullMatch) {
                 this.matches.push({ statements });
@@ -317,6 +320,7 @@ export class Matcher {
                         i -= 1;
                         break;
                     }
+
                     pairedChild.element.codeNode.push(
                         ...maybeChild.element.codeNode
                     );
@@ -326,6 +330,10 @@ export class Matcher {
 
             i += 1;
             aplToi += 1;
+        }
+        // Verify it is a full match
+        if (aplToi < aplTo.children.length) {
+            return [undefined, MatchResult.NoMatch];
         }
         if (i < code.children.length) {
             return [undefined, MatchResult.NoMatch];

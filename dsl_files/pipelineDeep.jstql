@@ -1,0 +1,14 @@
+proposal Pipeline{
+
+    case SingleArgument {
+        applicable to {
+            "<<someFunctionIdent:Identifier || MemberExpression>>(<<otherFunctionIdent:Identifier || MemberExpression>>(<<arggg:Identifier>>));"
+        }
+
+        transform to {
+            "(<<arggg>> |> <<otherFunctionIdent>>(%)) |> <<someFunctionIdent>>(%);"
+        }
+    }
+
+
+}
