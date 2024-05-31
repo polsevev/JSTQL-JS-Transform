@@ -10,6 +10,6 @@
         "moduleResolution": "node",
         "types": ["bun-types"]
     },
-    "include": ["src"],
+    "include": ["src", "index.ts"],
     "exclude": ["babel"]
 }

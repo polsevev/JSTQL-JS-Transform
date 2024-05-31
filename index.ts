@@ -1,32 +1,40 @@
 //import * as babelparser from "../babel/packages/babel-parser";
 import * as babelparser from "@babel/parser";
 //import core from "../babel/packages/babel-core";
-import { parse_with_plugins } from "./parser/parse";
+import { parse_with_plugins } from "./src/parser/parse";
 import {
     SelfHostedRecipe,
     TransformRecipe,
     transform,
-} from "./transform/transform";
+} from "./src/transform/transform";
 import { readdir } from "node:fs/promises";
-import { parseJSTQL } from "./langium/langiumRunner";
+import { parseJSTQL } from "./src/langium/langiumRunner";
 
 import { parseArgs } from "util";
 
-const options = {
-    o: {
-        type: "string",
-    },
-};
+const options = {};
 
 const { values: argVals, tokens: positional } = parseArgs({
-    options,
+    options: {
+        o: {
+            type: "string",
+        },
+    },
     tokens: true,
     allowPositionals: true,
 });
 const main = async () => {
     //transform(selfHostedTransformExampleMultiStmt, codeFromFile);
     console.log(positional);
-    if (!positional[0] || !positional[0].value.endsWith(".jstql")) {
+    console.log(argVals);
+    if (!positional) {
+        throw new Error("Something is wrong with args");
+    }
+    if (
+        !positional[0] &&
+        positional[0].kind === "positional" &&
+        !positional[0].value.endsWith(".jstql")
+    ) {
         throw new Error("First positional argument is current JSTQL file");
     }
     if (!positional[1] || !positional[1].value.endsWith(".js")) {
@@ -44,12 +52,13 @@ const main = async () => {
 
     for (let proposal of parsedJSTQL) {
         let [resultString, matches] = transform(proposal.cases, codeString);
-
-        let path = "./";
+        console.log(resultString);
+        let path = "./out.js";
         if (argVals["o"]) {
             path = argVals["o"];
         }
-        Bun.write(path, resultString);
+        console.log(path);
+        await Bun.write(path, resultString);
     }
 };
 
