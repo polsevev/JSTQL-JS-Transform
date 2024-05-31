@@ -10,83 +10,46 @@ import {
 import { readdir } from "node:fs/promises";
 import { parseJSTQL } from "./langium/langiumRunner";
 
-const dir = "../prettier/src";
+import { parseArgs } from "util";
 
-const path = "test_files/test2.js";
-const file = Bun.file(path);
-const codeFromFile = await file.text();
+const options = {
+    o: {
+        type: "string",
+    },
+};
+
+const { values: argVals, tokens: positional } = parseArgs({
+    options,
+    tokens: true,
+    allowPositionals: true,
+});
 const main = async () => {
     //transform(selfHostedTransformExampleMultiStmt, codeFromFile);
-
-    /*
-    console.log(codeFromFile);
-    const jstql_file =
-        "/home/rolfmg/Coding/Master/didactic-chainsaw/dsl_files/awaitToPromise.jstql";
-    const test_file = Bun.file(jstql_file);
-    const test_JSTQL = await test_file.text();
-    let proposals = await parseJSTQL(test_JSTQL);
-
-    let [code, count] = transform(proposals[0].cases, codeFromFile);
-    await Bun.write("output_files/test2.js", code);
-    return;
-    */
-    let basepathExamplesJSFiles = "../next.js";
-    let examples = (await readdir(basepathExamplesJSFiles, { recursive: true }))
-        .filter((x) => x.endsWith(".js"))
-        .map((x) => basepathExamplesJSFiles + "/" + x);
-    console.log(examples);
-    let result = [];
-    for (let proposalFile of [
-        "pipeline.jstql",
-        "do.jstql",
-        "awaitToPromise.jstql",
-    ]) {
-        const jstql_file = "dsl_files/" + proposalFile;
-        const test_file = Bun.file(jstql_file);
-        const test_JSTQL = await test_file.text();
-        let proposals = await parseJSTQL(test_JSTQL);
-
-        let sum = 0;
-        let failures = 0;
-        let filesSucceeded = 0;
-        console.log("Scripts found ", sum, "matches!");
-        let count = 0;
-        for (let examplesFile of examples) {
-            try {
-                if (examplesFile.split("/").includes("compiled")) {
-                    //continue;
-                }
-                console.log(examplesFile);
-                let script = await Bun.file(examplesFile).text();
-                let [resultString, matches] = transform(
-                    proposals[0].cases,
-                    script
-                );
-                sum += matches;
-                console.log(matches);
-                if (matches > 0) {
-                    await Bun.write(
-                        "output_testing/" +
-                            count +
-                            examplesFile.split("/").join("_"),
-                        resultString
-                    );
-                    count += 1;
-                }
-                filesSucceeded += 1;
-            } catch (e) {
-                failures += 1;
-                //console.log(e);
-            }
-            console.log("current sum", sum);
-        }
-        result.push(
-            proposalFile + ", " + sum + ", " + count + ", " + filesSucceeded
+    console.log(positional);
+    if (!positional[0] || !positional[0].value.endsWith(".jstql")) {
+        throw new Error("First positional argument is current JSTQL file");
+    }
+    if (!positional[1] || !positional[1].value.endsWith(".js")) {
+        throw new Error(
+            "Second positional argument is JS code to be transformed"
         );
     }
+    const jstql_file = positional[0].value;
+    const code_file = positional[1].value;
 
-    for (let res of result) {
-        console.log(res);
+    let jstqlString = await Bun.file(jstql_file).text();
+    let codeString = await Bun.file(code_file).text();
+
+    let parsedJSTQL = await parseJSTQL(jstqlString);
+
+    for (let proposal of parsedJSTQL) {
+        let [resultString, matches] = transform(proposal.cases, codeString);
+
+        let path = "./";
+        if (argVals["o"]) {
+            path = argVals["o"];
+        }
+        Bun.write(path, resultString);
     }
 };
 
