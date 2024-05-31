@@ -24,7 +24,7 @@ export function parseInternalTraTo(code: string): string {
             // We encountered a closing tag
             flag = false;
 
-            cleanedJS += temp;
+            cleanedJS += "_$$_" + temp + "_$$_";
 
             i += 1;
             temp = "";
@@ -59,7 +59,8 @@ export function parseInternalAplTo(code: string): InternalParseResult {
             let wildcard = new WildcardParser(
                 new WildcardTokenizer(temp).tokenize()
             ).parse();
-            //wildcard.identifier.name = "_" + wildcard.identifier.name + "_";
+            wildcard.identifier.name =
+                "_$$_" + wildcard.identifier.name + "_$$_";
             cleanedJS += wildcard.identifier.name;
 
             prelude.push(wildcard);

@@ -54,8 +54,10 @@ export function transform(
             let { cleanedJS: applicableTo, prelude } = parseInternalAplTo(
                 recipe.applicableTo
             );
+            console.log(applicableTo);
             let transformTo = parseInternalTraTo(recipe.transformTo);
-
+            console.log(transformTo);
+            console.log(prelude);
             let temp = transformSelfHosted(
                 { applicableTo, transformTo },
                 prelude,
@@ -92,7 +94,6 @@ function transformSelfHosted(
     }
     let matches = runMatch(codeTree, applicableToTree, internals);
     //showTreePaired(matches[0].statements[0]);
-    //console.log("We found", matches.length, "matches");
 
     let outputAST = transformer(matches, transformToTree, codeAST, transformTo);
 

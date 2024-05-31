@@ -52,12 +52,10 @@ const main = async () => {
 
     for (let proposal of parsedJSTQL) {
         let [resultString, matches] = transform(proposal.cases, codeString);
-        console.log(resultString);
         let path = "./out.js";
         if (argVals["o"]) {
             path = argVals["o"];
         }
-        console.log(path);
         await Bun.write(path, resultString);
     }
 };
