@@ -1,5 +1,4 @@
 # Based on https://raw.githubusercontent.com/github/gitignore/main/Node.gitignore
-
 # Logs
 
 logs
@@ -167,3 +166,5 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.\*
+
+output_testing/

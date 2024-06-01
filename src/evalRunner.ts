@@ -3,7 +3,7 @@ import { readdir } from "node:fs/promises";
 import { parseJSTQL } from "./langium/langiumRunner";
 
 const main = async () => {
-    let basepathExamplesJSFiles = "../atom";
+    let basepathExamplesJSFiles = "../next.js";
     let examples = (await readdir(basepathExamplesJSFiles, { recursive: true }))
         .filter((x) => x.endsWith(".js"))
         .map((x) => basepathExamplesJSFiles + "/" + x);

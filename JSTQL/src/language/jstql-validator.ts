@@ -18,26 +18,26 @@ export function registerValidationChecks(services: JstqlServices) {
  * Implementation of custom validations.
  */
 export class JstqlValidator {
-    validateWildcards(pair: Case, accept: ValidationAcceptor): void {
+    validateWildcards(case_: Case, accept: ValidationAcceptor): void {
         try {
             let validationResultAplTo = validateWildcardAplTo(
-                collectWildcard(pair.aplTo.apl_to_code.split(""))
+                collectWildcard(case_.aplTo.apl_to_code.split(""))
             );
             if (validationResultAplTo.errors.length != 0) {
                 accept("error", validationResultAplTo.errors.join("\n"), {
-                    node: pair.aplTo,
+                    node: case_.aplTo,
                     property: "apl_to_code",
                 });
             }
 
             let validationResultTraTo = validateWildcardTraTo(
-                collectWildcard(pair.traTo.transform_to_code.split("")),
+                collectWildcard(case_.traTo.transform_to_code.split("")),
                 validationResultAplTo.env
             );
 
             if (validationResultTraTo.length != 0) {
                 accept("error", validationResultTraTo.join("\n"), {
-                    node: pair.traTo,
+                    node: case_.traTo,
                     property: "transform_to_code",
                 });
             }

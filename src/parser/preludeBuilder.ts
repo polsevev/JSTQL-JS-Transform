@@ -19,13 +19,13 @@ function extractValues(types: t.Statement[]): Wildcard[] {
             if (init) {
                 if (init.type == "StringLiteral") {
                     init = <t.StringLiteral>init;
-                    prelude.push(
-                        new WildcardParser(
-                            new WildcardTokenizer(
-                                innerDSLVariableName + ":" + init
-                            ).tokenize()
-                        ).parse()
-                    );
+                    let wildcard = new WildcardParser(
+                        new WildcardTokenizer(
+                            innerDSLVariableName + ":" + init
+                        ).tokenize()
+                    ).parse();
+
+                    prelude.push(wildcard);
                 } else {
                     throw new Error(
                         "Invalid usage of right side declaration in prelude"

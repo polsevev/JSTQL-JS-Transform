@@ -1,11 +1,10 @@
 proposal DoExpression{
     case arrowFunction{
         applicable to {
-            "() => {
+            "(() => {
                 <<statements: (Statement && !ReturnStatement)+>>
                 return <<returnVal : Expression>>;
-            }
-            "
+            })();"
         }
         transform to {
             "(do {
