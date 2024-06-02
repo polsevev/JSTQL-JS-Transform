@@ -71,7 +71,7 @@ export function transform(
     return [output, amount];
 }
 
-function transformSelfHosted(
+export function transformSelfHosted(
     recipe: TransformRecipe,
     internals: Wildcard[],
     codeAST: t.Node
