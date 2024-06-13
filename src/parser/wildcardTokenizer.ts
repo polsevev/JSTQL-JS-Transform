@@ -116,7 +116,7 @@ export class WildcardTokenizer {
     }
     private isAlpha(val: string): boolean {
         let alphabet = new Set(
-            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_".split("")
+            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_1234567890".split("")
         );
         return alphabet.has(val);
     }

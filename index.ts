@@ -1,18 +1,10 @@
-//import * as babelparser from "../babel/packages/babel-parser";
-import * as babelparser from "@babel/parser";
-//import core from "../babel/packages/babel-core";
-import { parse_with_plugins } from "./src/parser/parse";
+
 import {
-    SelfHostedRecipe,
-    TransformRecipe,
+
     transform,
 } from "./src/transform/transform";
-import { readdir } from "node:fs/promises";
 import { parseJSTQL } from "./src/langium/langiumRunner";
-
 import { parseArgs } from "util";
-
-const options = {};
 
 const { values: argVals, tokens: positional } = parseArgs({
     options: {

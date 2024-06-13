@@ -1,0 +1,19 @@
+proposal lol {
+    case a {
+        applicable to {
+            "let <<a: Identifier>> = Iterator.from(<<e: Expression>>);
+            let <<aa: Identifier>> = Iterator.from(<<ee: Expression>>);
+
+            let <<bbbb: Identifier>> = function* () {
+            yield* <<aaa: Identifier>>;
+            yield* <<aaaa: Identifier>>;
+            }();"
+        }
+        transform to {
+            "let <<a>> = Iterator.from(<<e>>);
+            let <<aa>> = Iterator.from(<<ee>>);
+
+            let <<bbbb>> = Iterator.concat(<<aaa>>, <<aaaa>>);"
+        }
+    }
+}

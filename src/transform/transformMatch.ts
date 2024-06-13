@@ -53,7 +53,7 @@ export function transformer(
 
                     // For multi line applicable to
                     for (let i = 0; i < match.statements.length - 1; i++) {
-                        siblings[i].remove();
+                        //siblings[i].remove();
                     }
 
                     // For when we have matched with +
@@ -117,9 +117,11 @@ function extractWildcardPairs(match: Match): Map<string, t.Node[]> {
         ) {
             name = node.element.aplToNode.expression.name;
         }
-
-        if (name) {
+        
+        if (name && name.startsWith("_$$_")) {
             if (map.has(name)) {
+                console.log(name);
+                console.log(map.get(name));
                 throw new Error("Wildcard encountered twice!");
             }
 
